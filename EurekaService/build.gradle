@@ -43,7 +43,7 @@ dependencyManagement {
 
 task buildDocker(type: Docker, dependsOn: build) {
     push = true
-    applicationName = "erueka-service"
+    applicationName = "erueka-server"
     dockerfile = file('Dockerfile')
     doFirst {
         copy {

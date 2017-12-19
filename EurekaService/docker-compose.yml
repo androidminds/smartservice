@@ -1,0 +1,16 @@
+version: '2'
+services:
+  eurekaserver1:
+    image: eureka-server:1.0.0
+    ports:
+      - "8761:8761"
+    environment:
+      - spring.profiles.active=eureka_1
+
+  eurekaserver2:
+    image: eureka-server:1.0.0
+    #hostname: eurekaserver2
+    ports:
+      - "8761:8761"
+    environment:
+      - spring.profiles.active=eureka_2
