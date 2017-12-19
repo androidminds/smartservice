@@ -5,7 +5,7 @@ FROM java:8
 
 MAINTAINER Richard Liu <richard@androidminds.cn>
 
-ADD EurekaService-0.0.1.jar app.jar
+ADD EurekaService-1.0.0.jar app.jar
 
 RUN bash -c 'touch /app.jar'
 
