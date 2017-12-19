@@ -1,11 +1,11 @@
 # Name:     EurekaService
 # Time:     2017-12-18
 
-FROM java:8-jre-alpine
+FROM java:8
 
 MAINTAINER Richard Liu <richard@androidminds.cn>
 
-ADD EurekaService-1.0.0.jar app.jar
+ADD EurekaService-0.0.1.jar app.jar
 
 RUN bash -c 'touch /app.jar'
 
