@@ -1,3 +1,5 @@
 rootProject.name = 'smartservice'
 
 include "EurekaService"
+include "ZuulService"
+include "ConfigService"

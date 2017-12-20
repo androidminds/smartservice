@@ -1,20 +1,20 @@
-package cn.androidminds.zuulservice;
-
 /**
  author: Richard Liu
  Licence：Apache
  */
+package cn.androidminds.configservice;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
+import org.springframework.cloud.config.server.EnableConfigServer;
 
-@EnableZuulProxy
-@EnableDiscoveryClient
 @SpringBootApplication
-public class ZuulServiceApplication {
+@EnableConfigServer
+@EnableDiscoveryClient
+public class ConfigServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ZuulServiceApplication.class, args);
+		SpringApplication.run(ConfigServiceApplication.class, args);
 	}
 }

@@ -16,9 +16,29 @@ services:
       - spring.profiles.active=eureka_2
 
   zuulserver1:
-    image: eureka-server:1.0.0
-    #hostname: eurekaserver2
+    image: zuul-server:1.0.0
+    depends_on:
+      - eurekaserver1
     ports:
       - "8080:8080"
-    environment:
-      - spring.profiles.active=eureka_2
+
+  zuulserver2:
+    image: zuul-server:1.0.0
+    depends_on:
+      - eurekaserver1
+    ports:
+        - "8081:8080"
+
+  configserver1:
+    image: config-server:1.0.0
+    depends_on:
+      - eurekaserver1
+    ports:
+      - "9000:9000"
+
+  configserver1:
+    image: config-server:1.0.0
+    depends_on:
+      - eurekaserver1
+    ports:
+      - "9001:9000"
