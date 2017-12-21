@@ -1,0 +1,57 @@
+buildscript {
+	ext {
+		springBootVersion = '1.5.9.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath('se.transmode.gradle:gradle-docker:1.2')
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'docker'
+
+group = 'cn.androidminds'
+version = '1.0.0'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+}
+
+
+ext {
+	springCloudVersion = 'Edgware.RELEASE'
+}
+
+dependencies {
+	compile('org.springframework.cloud:spring-cloud-starter-feign')
+	compile("org.springframework.cloud:spring-cloud-starter-eureka")
+	compile("org.springframework.boot:spring-boot-starter-actuator")
+	compile("io.zipkin.java:zipkin-server")
+	compile("io.zipkin.java:zipkin-autoconfigure-ui")
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+task buildDocker(type: Docker, dependsOn: build) {
+    push = false
+    tag = "zipkin-server"
+    dockerfile = file('Dockerfile')
+    doFirst {
+        copy {
+            from jar
+            into stageDir
+        }
+    }
+}
