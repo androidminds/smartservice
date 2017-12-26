@@ -1,12 +1,17 @@
 spring:
   application:
-      name: ZuulService
+    name: JwtTokenService
 
 server:
-  port: 8080
+  port: 9300
 
 eureka:
   client:
     serviceUrl:
       defaultZone: http://${eureka.host:localhost}:${eureka.port:8761}/eureka/
 
+jwt:
+  password: adfe33ffllAD#32
+  token:
+    header: token
+    expire: 1440

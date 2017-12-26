@@ -62,3 +62,20 @@ services:
       - eurekaserver1
     ports:
       - "9101:9100"
+
+
+  userserver1:
+    image: user-server:1.0.0
+    command: java -Djava.security.egd=file:/dev/./urandom -jar /app.jar --eureka.host=eurekaserver1 --eureka.port=8761
+    depends_on:
+      - eurekaserver1
+    ports:
+      - "9200:9200"
+
+  userserver2:
+    image: user-server:1.0.0
+    command: java -Djava.security.egd=file:/dev/./urandom -jar /app.jar --eureka.host=eurekaserver1 --eureka.port=8761
+    depends_on:
+      - eurekaserver1
+    ports:
+      - "9201:9200"

@@ -1,5 +1,9 @@
-rootProject.name = 'smartservice'
+rootProject.name = 'SmartService'
 
 include "EurekaService"
 include "ZuulService"
 include "ConfigService"
+include 'JwtCommon'
+include "UserService"
+include "JwtTokenService"
+
