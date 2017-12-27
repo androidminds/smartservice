@@ -6,8 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.joda.time.DateTime;
 
-import java.security.KeyFactory;
-import java.security.spec.PKCS8EncodedKeySpec;
+
 
 public class JwtUtil {
     private static final String JWT_KEY_IDENTITY = "identity";
