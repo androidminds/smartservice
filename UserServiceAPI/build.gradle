@@ -1,0 +1,30 @@
+buildscript {
+    ext {
+        springBootVersion = '1.5.9.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+group 'cn.androidminds'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile('org.projectlombok:lombok:1.16.18')
+    compile('org.springframework:spring-web:4.3.13.RELEASE')
+    compile('org.springframework.cloud:spring-cloud-netflix-core:1.4.0.RELEASE')
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}

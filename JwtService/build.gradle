@@ -12,7 +12,7 @@ buildscript {
 }
 
 apply plugin: 'java'
-apply plugin: 'eclipse'
+apply plugin: 'idea'
 apply plugin: 'docker'
 apply plugin: 'org.springframework.boot'
 
@@ -30,19 +30,14 @@ ext {
 }
 
 dependencies {
+	compile project(':JwtServiceAPI')
+	compile project(':UserServiceAPI')
 	compile('org.springframework.cloud:spring-cloud-starter-config')
 	compile('org.springframework.cloud:spring-cloud-starter-eureka')
 	compile('org.springframework.cloud:spring-cloud-starter-feign')
 	compile('org.springframework.cloud:spring-cloud-starter-hystrix')
-	compile('org.springframework.security:spring-security-data')
 	compile('org.springframework.cloud:spring-cloud-starter-sleuth')
 	compile('org.springframework.cloud:spring-cloud-starter-zipkin')
-	compile('org.springframework.boot:spring-boot-starter-data-jpa')
-	compile('com.h2database:h2')
-	compile('mysql:mysql-connector-java')
-	compile('org.projectlombok:lombok:1.16.18')
-	compile('org.hibernate:hibernate-envers')
-	compile project(':UserServiceAPI')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
@@ -52,9 +47,10 @@ dependencyManagement {
 	}
 }
 
+
 task buildDocker(type: Docker, dependsOn: build) {
 	push = false
-	tag = "user-server"
+	tag = "jwt-token-server"
 	dockerfile = file('Dockerfile')
 	doFirst {
 		copy {

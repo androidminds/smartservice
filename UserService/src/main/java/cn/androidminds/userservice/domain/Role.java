@@ -18,7 +18,6 @@ import java.util.Set;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class Role /*extends AuditRBAC*/ {
-    private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue
     private Long id;

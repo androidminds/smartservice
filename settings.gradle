@@ -3,8 +3,10 @@ rootProject.name = 'SmartService'
 include "EurekaService"
 include "ZuulService"
 include "ConfigService"
-include "JwtCommon"
 include "UserService"
-include "JwtTokenService"
+include "UserServiceAPI"
+include "JwtService"
+include "JwtServiceAPI"
 include "ZipkinService"
+
 

@@ -29,7 +29,7 @@ ext {
 }
 
 dependencies {
-	compile project(':JwtCommon')
+	compile project(':JwtServiceAPI')
 	compile('org.springframework.cloud:spring-cloud-starter-feign')
 	compile('org.springframework.cloud:spring-cloud-starter-zuul')
 	compile("org.springframework.cloud:spring-cloud-starter-eureka")

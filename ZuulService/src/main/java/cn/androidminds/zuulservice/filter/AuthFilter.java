@@ -1,32 +1,25 @@
 package cn.androidminds.zuulservice.filter;
 
-
-
-import cn.androidminds.jwtcommon.JwtInfo;
-import cn.androidminds.jwtcommon.JwtUtil;
-import cn.androidminds.zuulservice.feign.IJwtTokenService;
-import cn.androidminds.zuulservice.feign.IUserService;
+import cn.androidminds.jwtserviceapi.JwtInfo;
+import cn.androidminds.jwtserviceapi.JwtUtil;
+import cn.androidminds.zuulservice.feign.JwtServiceProxy;
+import cn.androidminds.zuulservice.feign.UserServiceProxy;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.URLEncoder;
-import java.util.Date;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 
 @Component
 public class AuthFilter extends ZuulFilter {
 
     @Autowired
-    private IUserService userService;
+    private UserServiceProxy userServiceProxy;
     @Autowired
-    private IJwtTokenService jwtTokenService;
+    private JwtServiceProxy jwtServiceProxy;
 
     /*
     @Value("${gate.ignore.startWith}")
@@ -74,8 +67,6 @@ public class AuthFilter extends ZuulFilter {
 
         // check permission
 
-
-        // 申请客户端密钥头
         //context.addZuulRequestHeader(serviceAuthConfig.getTokenHeader(), serviceAuthUtil.getClientToken());
 
         return null;
@@ -92,7 +83,7 @@ public class AuthFilter extends ZuulFilter {
     }
 
     private byte[] getJWTPublicKey() {
-        return jwtTokenService.getPubKey().getBytes();
+        return jwtServiceProxy.getPubKey().getBytes();
     }
 
 
