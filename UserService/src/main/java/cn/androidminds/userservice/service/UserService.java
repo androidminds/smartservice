@@ -9,27 +9,48 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("user")
 public class UserService implements IUserService{
 
     @Autowired
     UserRepository userRepository;
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
 
-    public UserInfo getInfo(@PathVariable("identity") String identity) {
-        User user = userRepository.findOneByName(identity);
+    public UserInfo getInfoById(String id) {
+        if(id == null)
+            return null;
+
+        Integer uId = new Integer(id);
+
+        User user = userRepository.findOne(uId.longValue());
 
         if (user != null) {
-            return new UserInfo(user.getName());
+            return user.getUserInfo();
+        }
+        return null;
+    }
+
+    public UserInfo getInfo(String identity) {
+        if(identity == null)
+            return null;
+
+        User user = userRepository.findOneByNameOrEmailOrPhoneNumber(identity, identity, identity);
+
+        if (user != null) {
+            return user.getUserInfo();
         }
         return null;
     }
 
     public boolean verify(String identity, String password)  {
+        if(identity == null || password == null)
+            return false;
+
         User user = userRepository.findOneByNameOrEmailOrPhoneNumber(identity, identity, identity);
 
         if (user != null) {
             if(encoder.matches(password, user.getPassword())) {
+                return true;
+            } else if(password.equals(user.getPassword())) {
                 return true;
             }
         }

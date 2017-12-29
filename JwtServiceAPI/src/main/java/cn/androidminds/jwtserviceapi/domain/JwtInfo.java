@@ -1,4 +1,4 @@
-package cn.androidminds.jwtserviceapi;
+package cn.androidminds.jwtserviceapi.domain;
 
 import lombok.*;
 
@@ -8,6 +8,5 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
 public class JwtInfo implements Serializable {
-    private String identity;
     private String userName;
 }

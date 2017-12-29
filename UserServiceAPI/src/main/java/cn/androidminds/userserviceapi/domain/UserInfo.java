@@ -9,5 +9,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class UserInfo implements Serializable {
     private static final long serialVersionUID = 1L;
+    Long id;
     String name;
+    String email;
+    String phoneNumber;
 }

@@ -2,11 +2,14 @@ package cn.androidminds.userserviceapi.service;
 
 
 import cn.androidminds.userserviceapi.domain.UserInfo;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 public interface IUserService {
+    @RequestMapping(value = "/user/{id}",method = RequestMethod.GET)
+    UserInfo getInfoById(@PathVariable("id")String id);
     @RequestMapping(value = "/user/info",method = RequestMethod.GET)
     UserInfo getInfo(@RequestParam(value = "identity")String identity);
     @RequestMapping(value = "/user/verify",method = RequestMethod.GET)

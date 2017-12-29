@@ -1,6 +1,6 @@
 spring:
   application:
-    name: JwtTokenService
+    name: JwtService
 
 server:
   port: 9300

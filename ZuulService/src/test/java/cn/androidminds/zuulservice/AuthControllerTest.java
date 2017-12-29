@@ -1,6 +1,5 @@
-package cn.androidminds.userservice;
+package cn.androidminds.zuulservice;
 
-import cn.androidminds.userservice.domain.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,21 +10,19 @@ import org.springframework.util.MultiValueMap;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class userControllerTest {
+public class AuthControllerTest {
 
     private TestRestTemplate template = new TestRestTemplate();
-    private int port = 9200;
+    private int port = 8080;
 
     @Test
-    public void testInfo(){
-        String url = "http://localhost:"+port+"/user/info";
+    public void testLogin(){
+        String url = "http://localhost:"+port+"/auth/login";
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>();
         map.add("identity", "admin");
-
-        User result = template.getForObject(url+"/{identity}", User.class, "admin");
-        assert(result != null);
-        assert(result.getPassword() == null);
-        assert("admin".equals(result.getName()));
+        map.add("password", "123456");
+        String result = template.postForObject(url, map, String.class);
+        System.out.println(result);
     }
 
 }

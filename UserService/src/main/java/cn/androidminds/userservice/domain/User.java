@@ -1,6 +1,7 @@
 package cn.androidminds.userservice.domain;
 
 
+import cn.androidminds.userserviceapi.domain.UserInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -56,5 +57,9 @@ public class User /*extends AuditRBAC*/{
             }
         }
         return allAuthorities;
+    }
+
+    public UserInfo getUserInfo() {
+        return new UserInfo(id, name, email, phoneNumber);
     }
 }

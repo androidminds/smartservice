@@ -1,4 +1,4 @@
-package cn.androidminds.jwtserviceapi;
+package cn.androidminds.jwtserviceapi.util;
 
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;

@@ -13,7 +13,7 @@ import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class LoginControllerTest {
+public class JwtServiceTest {
 
     private TestRestTemplate template = new TestRestTemplate();
     private int port = 9300;

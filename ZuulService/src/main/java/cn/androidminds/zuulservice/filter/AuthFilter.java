@@ -1,7 +1,7 @@
 package cn.androidminds.zuulservice.filter;
 
-import cn.androidminds.jwtserviceapi.JwtInfo;
-import cn.androidminds.jwtserviceapi.JwtUtil;
+import cn.androidminds.jwtserviceapi.domain.JwtInfo;
+import cn.androidminds.jwtserviceapi.util.JwtUtil;
 import cn.androidminds.zuulservice.feign.JwtServiceProxy;
 import cn.androidminds.zuulservice.feign.UserServiceProxy;
 import com.netflix.zuul.ZuulFilter;
@@ -20,14 +20,6 @@ public class AuthFilter extends ZuulFilter {
     private UserServiceProxy userServiceProxy;
     @Autowired
     private JwtServiceProxy jwtServiceProxy;
-
-    /*
-    @Value("${gate.ignore.startWith}")
-    private String startWith;
-
-    @Value("${zuul.prefix}")
-    private String zuulPrefix;
-*/
 
     @Override
     public String filterType() {
@@ -48,7 +40,7 @@ public class AuthFilter extends ZuulFilter {
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
         HttpServletRequest request = context.getRequest();
-        final String requestUri = request.getRequestURI();//.substring(zuulPrefix.length());
+        final String requestUri = request.getRequestURI();
         final String method = request.getMethod();
         System.out.println("requestUri: " + requestUri + "; method: " + method);
 /*
