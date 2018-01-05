@@ -6,54 +6,67 @@ import cn.androidminds.userserviceapi.service.IUserService;
 import cn.androidminds.userserviceapi.domain.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
-public class UserService implements IUserService{
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class UserService {
 
     @Autowired
     UserRepository userRepository;
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
 
-    public UserInfo getInfoById(String id) {
-        if(id == null)
-            return null;
-
-        Integer uId = new Integer(id);
-
-        User user = userRepository.findOne(uId.longValue());
-
-        if (user != null) {
-            return user.getUserInfo();
-        }
-        return null;
+    public long createUser(User user) {
+        user.setPassword(encoder.encode(user.getPassword()));
+        User result = userRepository.save(user);
+        return result.getId();
     }
 
-    public UserInfo getInfo(String identity) {
-        if(identity == null)
-            return null;
-
-        User user = userRepository.findOneByNameOrEmailOrPhoneNumber(identity, identity, identity);
-
-        if (user != null) {
-            return user.getUserInfo();
+    public Iterable<User> list(long start, int count) {
+        ArrayList<Long> idList = new ArrayList<>();
+        for(long i = start; i < start + count; i++) {
+            idList.add(i);
         }
-        return null;
+        return userRepository.findAll(idList);
+    }
+
+    public Optional<User> getUserById(Long id){
+        return userRepository.findOne(id.longValue());
+    }
+
+    public Optional<User> getUserByName(String name) {
+        return userRepository.findOneByName(name);
+    }
+
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findOneByEmail(email);
+    }
+
+    public Optional<User> getUserByPhoneNumber(String phoneNumber) {
+        return userRepository.findOneByPhoneNumber(phoneNumber);
+    }
+
+    public boolean modify(User user, boolean modifyPass) {
+        if(modifyPass && user.getPassword() != null) {
+            user.setPassword(encoder.encode(user.getPassword()));
+        }
+        Long result = userRepository.saveAndFlush(user);
+        return result.intValue() > 0;
+    }
+
+    public void delete(long id) {
+        userRepository.delete(new Long(id));
     }
 
     public boolean verify(String identity, String password)  {
-        if(identity == null || password == null)
-            return false;
-
-        User user = userRepository.findOneByNameOrEmailOrPhoneNumber(identity, identity, identity);
-
-        if (user != null) {
-            if(encoder.matches(password, user.getPassword())) {
-                return true;
-            } else if(password.equals(user.getPassword())) {
-                return true;
-            }
-        }
-        return false;
+        Optional<User> user = userRepository.findOneByNameOrEmailOrPhoneNumber(identity, identity, identity);
+        return user.map(u->{return (encoder.matches(password, u.getPassword()) ||
+                password.equals(u.getPassword()));})
+                .orElse(false);
     }
+
 }

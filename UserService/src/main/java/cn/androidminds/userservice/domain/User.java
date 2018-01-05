@@ -2,9 +2,9 @@ package cn.androidminds.userservice.domain;
 
 
 import cn.androidminds.userserviceapi.domain.UserInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.validator.constraints.Email;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,6 +19,7 @@ import java.util.Set;
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = false)
+@NoArgsConstructor
 public class User /*extends AuditRBAC*/{
     @Id
     @GeneratedValue
@@ -28,8 +29,8 @@ public class User /*extends AuditRBAC*/{
     private String name;
 
     @NotNull
-    @Size(min = 64, max = 64)
-    @Column(length = 64)
+    @Size(min = 60, max = 60)
+    @Column(length = 60)
     private String password;
 
     @Email
@@ -59,7 +60,15 @@ public class User /*extends AuditRBAC*/{
         return allAuthorities;
     }
 
+    public User(UserInfo userInfo) {
+        id = userInfo.getId();
+        password = userInfo.getPassword();
+        name = userInfo.getName();
+        email = userInfo.getEmail();
+        phoneNumber = userInfo.getPhoneNumber();
+    }
+
     public UserInfo getUserInfo() {
-        return new UserInfo(id, name, email, phoneNumber);
+        return new UserInfo(id, null, name, email, phoneNumber);
     }
 }

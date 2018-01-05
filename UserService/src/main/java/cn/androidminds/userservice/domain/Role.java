@@ -3,6 +3,7 @@ package cn.androidminds.userservice.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.Id;
@@ -16,6 +17,7 @@ import java.util.Set;
 
 @Entity
 @Data
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 public class Role /*extends AuditRBAC*/ {
     @Id

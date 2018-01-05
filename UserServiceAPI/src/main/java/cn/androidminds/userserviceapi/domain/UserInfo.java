@@ -10,6 +10,7 @@ import java.io.Serializable;
 public class UserInfo implements Serializable {
     private static final long serialVersionUID = 1L;
     Long id;
+    String password;
     String name;
     String email;
     String phoneNumber;

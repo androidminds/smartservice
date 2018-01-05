@@ -1,18 +1,31 @@
 package cn.androidminds.userserviceapi.service;
 
 
+import cn.androidminds.commonapi.rest.RestResponse;
+import cn.androidminds.commonapi.rest.StatusResponse;
 import cn.androidminds.userserviceapi.domain.UserInfo;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
 
 public interface IUserService {
-    @RequestMapping(value = "/user/{id}",method = RequestMethod.GET)
-    UserInfo getInfoById(@PathVariable("id")String id);
-    @RequestMapping(value = "/user/info",method = RequestMethod.GET)
-    UserInfo getInfo(@RequestParam(value = "identity")String identity);
-    @RequestMapping(value = "/user/verify",method = RequestMethod.GET)
-    boolean verify(@RequestParam(value = "identity")String identity,
-                   @RequestParam(value = "password")String password);
+    @PostMapping("/users")
+    RestResponse<UserInfo> create(@RequestBody UserInfo userInfo);
+
+    @GetMapping("/users")
+    RestResponse<ArrayList<UserInfo>> list(@RequestParam(value = "start",required = true)long start,
+                                           @RequestParam(value = "count",required = true)int count);
+
+    @GetMapping("/users/{id}")
+    RestResponse<UserInfo> get(@PathVariable(value = "id",required = true)Long id);
+
+    @PutMapping("/users/{id}")
+    StatusResponse modify(@RequestBody UserInfo userInfo);
+
+    @DeleteMapping("/users/{id}")
+    StatusResponse delete(@PathVariable(value = "id",required = true)Long id);
+
+    @GetMapping("/verify")
+    StatusResponse verify(@RequestParam(value = "identity",required = true)String identity,
+                @RequestParam(value = "password",required = true)String password);
 }

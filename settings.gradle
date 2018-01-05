@@ -8,5 +8,6 @@ include "UserServiceAPI"
 include "JwtService"
 include "JwtServiceAPI"
 include "ZipkinService"
+include "CommonAPI"
 
 

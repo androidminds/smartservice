@@ -23,6 +23,7 @@ repositories {
 }
 
 dependencies {
+    compile project(':CommonAPI')
     compile('org.projectlombok:lombok:1.16.18')
     compile('org.springframework:spring-web:4.3.13.RELEASE')
     compile('org.springframework.cloud:spring-cloud-netflix-core:1.4.0.RELEASE')
