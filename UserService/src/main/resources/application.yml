@@ -13,13 +13,13 @@ spring:
     hibernate:
       ddl-auto: create-drop
   datasource:
-    url: jdbc:mysql://localhost:3306/userdb?characterEncoding=utf8&useSSL=true
-    # jdbc:h2:mem:user
+    # url: jdbc:mysql://localhost:3306/userdb?characterEncoding=utf8&useSSL=true
+    url: jdbc:h2:mem:user
     username: root
     password: 123456
-    data: classpath:db/data.sql
-    driver-class-name: com.mysql.jdbc.Driver
-    #org.h2.Driver
+    # data: classpath:db/data.sql
+    #driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name:org.h2.Driver
 
 server:
   port: 9200
