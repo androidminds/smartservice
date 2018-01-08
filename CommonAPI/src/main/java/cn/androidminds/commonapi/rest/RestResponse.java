@@ -19,7 +19,7 @@ public class RestResponse<T> extends StatusResponse{
     }
 
     public RestResponse<T> setStatusCode(int code) {
-        setStatusCode(code);
+        super.setStatusCode(code);
         return this;
     }
 }

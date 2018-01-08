@@ -20,10 +20,9 @@ public class UserService {
     UserRepository userRepository;
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
 
-    public long createUser(User user) {
+    public User createUser(User user) {
         user.setPassword(encoder.encode(user.getPassword()));
-        User result = userRepository.save(user);
-        return result.getId();
+        return userRepository.save(user);
     }
 
     public Iterable<User> list(long start, int count) {
@@ -54,8 +53,8 @@ public class UserService {
         if(modifyPass && user.getPassword() != null) {
             user.setPassword(encoder.encode(user.getPassword()));
         }
-        Long result = userRepository.saveAndFlush(user);
-        return result.intValue() > 0;
+        user = userRepository.saveAndFlush(user);
+        return user.getId() > 0;
     }
 
     public void delete(long id) {

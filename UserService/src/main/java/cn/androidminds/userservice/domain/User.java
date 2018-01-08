@@ -22,7 +22,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class User /*extends AuditRBAC*/{
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Size(min = 1, max = 64)
@@ -33,7 +33,6 @@ public class User /*extends AuditRBAC*/{
     @Column(length = 60)
     private String password;
 
-    @Email
     @Size(min = 5, max = 64)
     @Column(length = 64, unique = true)
     private String email;

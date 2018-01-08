@@ -9,6 +9,7 @@ import cn.androidminds.userserviceapi.domain.UserInfo;
 import cn.androidminds.userserviceapi.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,9 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-
 
 @RestController
 @Transactional
@@ -27,12 +26,12 @@ public class UserController implements IUserService {
     @Autowired
     UserService userService;
 
-    @Value("${userservice.max-page-count}")
-    int maxPageCount;
+    //@Value("${userservice.max-page-count}")
+    int maxPageCount = 50;
 
     public RestResponse<UserInfo> create(@RequestBody UserInfo userInfo) {
         int error;
-        RestResponse<UserInfo> result = new RestResponse<UserInfo>();
+        RestResponse<UserInfo> result = new RestResponse<>();
 
         if(userInfo.getName() == null) {
             return result.setStatusCode(ErrorCode.ERR_PARAM_NAME_NULL);
@@ -72,10 +71,9 @@ public class UserController implements IUserService {
             }
         }
 
-        long id = userService.createUser(new User(userInfo));
-        if(id > 0) {
-            userInfo.setId(id);
-            return result.setStatusCode(ErrorCode.OK).setData(userInfo);
+        User user = userService.createUser(new User(userInfo));
+        if(user.getId()> 0) {
+            return result.setStatusCode(ErrorCode.OK).setData(user.getUserInfo());
         } else {
             return result.setStatusCode(ErrorCode.EXECUTE_ADD_USER_FAIL);
         }
@@ -106,7 +104,7 @@ public class UserController implements IUserService {
         Optional<User> user =  userService.getUserById(id);
         return user.map(u->{ return result.setStatusCode(ErrorCode.OK)
                 .setData(u.getUserInfo());})
-                .orElse(result);
+                .orElse(result.setStatusCode(ErrorCode.FAIL));
     }
 
     public StatusResponse modify(@RequestBody UserInfo userInfo) {
@@ -132,23 +130,31 @@ public class UserController implements IUserService {
             }
         }
 
-        if (userInfo.getEmail() != null) {
+        if (userInfo.getEmail() != null && !userInfo.getEmail().equalsIgnoreCase(user.get().getEmail())) {
             if((error = Format.checkEmail(userInfo.getEmail())) != ErrorCode.OK)  {
                 return result.setStatusCode(error);
             }
-            if(userService.getUserByEmail(userInfo.getEmail()).isPresent()) {
-                return result.setStatusCode(ErrorCode.ERR_PARAM_EMAIL_EXISTED);
-            }
 
+            try {
+                if (userService.getUserByEmail(userInfo.getEmail()).isPresent()) {
+                    return result.setStatusCode(ErrorCode.ERR_PARAM_EMAIL_EXISTED);
+                }
+            } catch(Exception e) {
+
+            }
             user.get().setEmail(userInfo.getEmail());
         }
 
-        if (userInfo.getPhoneNumber() != null && userService.getUserByPhoneNumber(userInfo.getPhoneNumber()).isPresent()) {
+        if (userInfo.getPhoneNumber() != null && !userInfo.getPhoneNumber().equalsIgnoreCase(user.get().getPhoneNumber()) ) {
             if((error = Format.checkPhoneNumber(userInfo.getPhoneNumber())) != ErrorCode.OK)  {
                 return result.setStatusCode(error);
             }
-            if(userService.getUserByPhoneNumber(userInfo.getPhoneNumber()).isPresent()) {
-                return result.setStatusCode(ErrorCode.ERR_PARAM_PHONENUMBER_EXISTED);
+            try {
+                if (userService.getUserByPhoneNumber(userInfo.getPhoneNumber()).isPresent()) {
+                    return result.setStatusCode(ErrorCode.ERR_PARAM_PHONENUMBER_EXISTED);
+                }
+            }catch(Exception e) {
+
             }
             user.get().setPhoneNumber(userInfo.getPhoneNumber());
         }
