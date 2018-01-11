@@ -20,7 +20,7 @@ public class UserService {
     UserRepository userRepository;
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
 
-    public User createUser(User user) {
+    public User createUser(User user, int role) {
         user.setPassword(encoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
@@ -35,6 +35,10 @@ public class UserService {
 
     public Optional<User> getUserById(Long id){
         return userRepository.findOne(id.longValue());
+    }
+
+    public Optional<User> getUserByIdentity(String identity) {
+        return userRepository.findOneByNameOrEmailOrPhoneNumber(identity, identity, identity);
     }
 
     public Optional<User> getUserByName(String name) {

@@ -10,22 +10,28 @@ import java.util.ArrayList;
 
 public interface IUserService {
     @PostMapping("/users")
-    RestResponse<UserInfo> create(@RequestBody UserInfo userInfo);
+    RestResponse<UserInfo> create(@RequestBody UserInfo userInfo,
+                                  @RequestParam(value = "role", required = true) int role,
+                                  @RequestParam(value = "creator_token", required = true) String creator_token);
 
     @GetMapping("/users")
     RestResponse<ArrayList<UserInfo>> list(@RequestParam(value = "start",required = true)long start,
-                                           @RequestParam(value = "count",required = true)int count);
+                                           @RequestParam(value = "count",required = true)int count,
+                                           @RequestParam(value = "creator_token", required = true) String creator_token);
 
     @GetMapping("/users/{id}")
-    RestResponse<UserInfo> get(@PathVariable(value = "id",required = true)Long id);
+    RestResponse<UserInfo> get(@PathVariable(value = "id",required = true)Long id,
+                               @RequestParam(value = "creator_token", required = true) String creator_token);
 
     @PutMapping("/users/{id}")
-    StatusResponse modify(@RequestBody UserInfo userInfo);
+    StatusResponse modify(@RequestBody UserInfo userInfo,
+                          @RequestParam(value = "creator_token", required = true) String creator_token);
 
     @DeleteMapping("/users/{id}")
-    StatusResponse delete(@PathVariable(value = "id",required = true)Long id);
+    StatusResponse delete(@PathVariable(value = "id",required = true)Long id,
+                          @RequestParam(value = "creator_token", required = true) String creator_token);
 
     @GetMapping("/verify")
-    StatusResponse verify(@RequestParam(value = "identity",required = true)String identity,
-                @RequestParam(value = "password",required = true)String password);
+    RestResponse<UserInfo> verify(@RequestParam(value = "identity",required = true)String identity,
+                @RequestParam(value = "password",required = true) String password);
 }

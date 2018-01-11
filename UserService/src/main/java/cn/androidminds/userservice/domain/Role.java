@@ -1,6 +1,7 @@
 package cn.androidminds.userservice.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -17,9 +18,16 @@ import java.util.Set;
 
 @Entity
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class Role /*extends AuditRBAC*/ {
+public class Role /* extends AuditRBAC */ {
+    public final static int ROOT = 1;
+    public final static int ADMIN = 2;
+    public final static int NORMAL = 3;
+
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue
     private Long id;

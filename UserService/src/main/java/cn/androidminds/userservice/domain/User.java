@@ -2,6 +2,9 @@ package cn.androidminds.userservice.domain;
 
 
 import cn.androidminds.userserviceapi.domain.UserInfo;
+import cn.androidminds.userserviceapi.domain.UserState;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -19,8 +22,10 @@ import java.util.Set;
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = false)
+@AllArgsConstructor
 @NoArgsConstructor
 public class User /*extends AuditRBAC*/{
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,6 +36,7 @@ public class User /*extends AuditRBAC*/{
     @NotNull
     @Size(min = 60, max = 60)
     @Column(length = 60)
+    @JsonIgnore
     private String password;
 
     @Size(min = 5, max = 64)
@@ -41,33 +47,53 @@ public class User /*extends AuditRBAC*/{
     @Column(name="phone_number", length = 32, unique = true)
     private String phoneNumber;
 
-    @Transient
+    private int state;
+
+    @JsonIgnore
     @ManyToMany(targetEntity = Role.class, fetch = FetchType.EAGER)
     @BatchSize(size = 50)
     private Set<Role> roles = new HashSet<>();
 
+    @JsonIgnore
     @Transient
-    private Set<GrantedAuthority> authorities = new HashSet<>();
+    private Set<Authority> authorities;
 
-    public Set<GrantedAuthority> getAuthorities() {
-        Set<GrantedAuthority> allAuthorities = new HashSet<>();
-        for(Role role : roles){
-            for(Authority authority : role.getAuthorities()){
-                allAuthorities.add(new SimpleGrantedAuthority(authority.getValue()));
+    public Set<Authority> getAuthorities() {
+        if(authorities == null) {
+            Set<Authority> allAuthorities = new HashSet<>();
+            for (Role role : roles) {
+                for (Authority authority : role.getAuthorities()) {
+                    allAuthorities.add(authority);
+                }
             }
+            if(allAuthorities.size() > 0) authorities = allAuthorities;
         }
-        return allAuthorities;
+        return authorities;
     }
 
-    public User(UserInfo userInfo) {
+    public boolean hasAuthority(int value) {
+        getAuthorities();
+        if(authorities != null) {
+            for(Authority authority: authorities) {
+                if(authority.getValue() == value) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public User(UserInfo userInfo, String creator) {
         id = userInfo.getId();
         password = userInfo.getPassword();
         name = userInfo.getName();
         email = userInfo.getEmail();
         phoneNumber = userInfo.getPhoneNumber();
+        state = userInfo.getState();
+        //setCreatedBy(creator);
     }
 
     public UserInfo getUserInfo() {
-        return new UserInfo(id, null, name, email, phoneNumber);
+        return new UserInfo(id, null, name, email, phoneNumber, state);
     }
 }

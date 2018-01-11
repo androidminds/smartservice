@@ -1,15 +1,20 @@
 package cn.androidminds.userservice.controller;
 
 import cn.androidminds.commonapi.rest.StatusResponse;
+import cn.androidminds.jwtserviceapi.domain.JwtInfo;
+import cn.androidminds.jwtserviceapi.util.JwtUtil;
+import cn.androidminds.userservice.domain.Authority;
+import cn.androidminds.userservice.domain.Role;
 import cn.androidminds.userservice.domain.User;
 import cn.androidminds.commonapi.rest.RestResponse;
+import cn.androidminds.userservice.feign.JwtServiceProxy;
 import cn.androidminds.userservice.service.UserService;
 import cn.androidminds.userserviceapi.Error.ErrorCode;
 import cn.androidminds.userserviceapi.domain.UserInfo;
 import cn.androidminds.userserviceapi.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,10 +31,27 @@ public class UserController implements IUserService {
     @Autowired
     UserService userService;
 
-    //@Value("${userservice.max-page-count}")
+    @Autowired
+    private JwtServiceProxy jwtServiceProxy;
+
+    @Value("${userservice.max-page-count}")
     int maxPageCount = 50;
 
-    public RestResponse<UserInfo> create(@RequestBody UserInfo userInfo) {
+    byte[] jwtPublicKey;
+
+    private byte[] getJWTPublicKey() {
+        if(jwtPublicKey == null){
+            ResponseEntity<String> response = jwtServiceProxy.getPubKey();
+            if(response != null && response.getBody() != null) {
+                jwtPublicKey = response.getBody().getBytes();
+            }
+        }
+        return jwtPublicKey;
+    }
+
+    public RestResponse<UserInfo> create(@RequestBody UserInfo userInfo,
+                                         @RequestParam int role,
+                                         @RequestParam String creator_token) {
         int error;
         RestResponse<UserInfo> result = new RestResponse<>();
 
@@ -71,16 +93,31 @@ public class UserController implements IUserService {
             }
         }
 
-        User user = userService.createUser(new User(userInfo));
-        if(user.getId()> 0) {
-            return result.setStatusCode(ErrorCode.OK).setData(user.getUserInfo());
-        } else {
-            return result.setStatusCode(ErrorCode.EXECUTE_ADD_USER_FAIL);
+        try {
+            JwtInfo jwtInfo = JwtUtil.getJwtInfo(creator_token, getJWTPublicKey());
+            Optional<User> creator = userService.getUserByName(jwtInfo.getUserName());
+            if (!creator.isPresent()) return result.setStatusCode(ErrorCode.ERR_OPERATOR_NOT_ALLOWED);
+
+            if(role == Role.ROOT
+                    || (role == Role.ADMIN && !creator.get().hasAuthority(Authority.OP_CREATE_ADMIN_USER))
+                    || (role == Role.NORMAL && !creator.get().hasAuthority(Authority.OP_CREATE_NORMAL_USER))) {
+                return result.setStatusCode(ErrorCode.ERR_OPERATOR_NOT_ALLOWED);
+            }
+            User user = userService.createUser(new User(userInfo, jwtInfo.getUserName()), role);
+
+            if(user.getId()> 0) {
+                return result.setStatusCode(ErrorCode.OK).setData(user.getUserInfo());
+            } else {
+                return result.setStatusCode(ErrorCode.EXECUTE_ADD_USER_FAIL);
+            }
+        } catch (Exception e) {
+            return result.setStatusCode(ErrorCode.ERR_OPERATOR_NOT_ALLOWED);
         }
     }
 
     public RestResponse<ArrayList<UserInfo>> list(@RequestParam(value = "start",required = true)long start,
-                                                  @RequestParam(value = "count",required = true)int count) {
+                                                  @RequestParam(value = "count",required = true)int count,
+                                                  @RequestParam String token) {
         RestResponse<ArrayList<UserInfo>> result = new RestResponse<>();
         if(start <= 0 || count <= 0) {
             return result.setStatusCode(ErrorCode.FAIL);
@@ -96,7 +133,8 @@ public class UserController implements IUserService {
         return result.setStatusCode(ErrorCode.OK).setData(infoList);
     }
 
-    public RestResponse<UserInfo> get(@PathVariable(value = "id",required = true)Long id){
+    public RestResponse<UserInfo> get(@PathVariable(value = "id",required = true)Long id,
+                                      @RequestParam String token){
         RestResponse<UserInfo> result = new RestResponse<>();
 
         if(id <= 0) return result.setStatusCode(ErrorCode.ERR_PARAM_ID_NOT_EXISTED);
@@ -107,7 +145,8 @@ public class UserController implements IUserService {
                 .orElse(result.setStatusCode(ErrorCode.FAIL));
     }
 
-    public StatusResponse modify(@RequestBody UserInfo userInfo) {
+    public StatusResponse modify(@RequestBody UserInfo userInfo,
+                                 @RequestParam String token) {
         int error;
         StatusResponse result = new StatusResponse();
         boolean modifyPass = false;
@@ -161,7 +200,8 @@ public class UserController implements IUserService {
         return result.setStatusCode(userService.modify(user.get(), modifyPass)?ErrorCode.OK:ErrorCode.FAIL);
     }
 
-    public StatusResponse delete(@PathVariable(value = "id",required = true)Long id) {
+    public StatusResponse delete(@PathVariable(value = "id",required = true)Long id,
+                                 @RequestParam String token) {
         StatusResponse result = new StatusResponse();
         if(id < 0) return result.setStatusCode(ErrorCode.ERR_PARAM_ID_NOT_EXISTED);
         if(userService.getUserById(id) != null) {
@@ -172,8 +212,15 @@ public class UserController implements IUserService {
         }
     }
 
-    public StatusResponse verify(@RequestParam(value = "identity",required = true)String identity,
+    public RestResponse<UserInfo> verify(@RequestParam(value = "identity",required = true)String identity,
                           @RequestParam(value = "password",required = true)String password)  {
-        return new StatusResponse().setStatusCode(userService.verify(identity, password)?ErrorCode.OK:ErrorCode.FAIL);
+        RestResponse<UserInfo> result = new RestResponse<>();
+        if(userService.verify(identity, password)) {
+            Optional<User> user = userService.getUserByIdentity(identity);
+            if(user.isPresent()) {
+                return result.setStatusCode(ErrorCode.OK).setData(user.get().getUserInfo());
+            }
+        }
+        return result.setStatusCode(ErrorCode.FAIL);
     }
 }

@@ -13,10 +13,13 @@ import javax.persistence.Id;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public  class Authority /*extends AuditRBAC*/ {
+public  class Authority /*extends AuditRBAC */{
+    public final static int OP_CREATE_ADMIN_USER = 100;
+    public final static int OP_CREATE_NORMAL_USER = 101;
+
     @Id
     @GeneratedValue
     private Long id;
     private String name;
-    private String value;
+    private int value;
 }

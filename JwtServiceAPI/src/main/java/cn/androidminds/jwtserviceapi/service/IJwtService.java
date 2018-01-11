@@ -1,18 +1,15 @@
 package cn.androidminds.jwtserviceapi.service;
 
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 public interface IJwtService {
-    @RequestMapping(value = "/auth/login", method = RequestMethod.POST)
-    String login(@RequestParam(value = "identity") String identity,
-                 @RequestParam(value = "password") String password);
+    @PostMapping("/auth/login")
+    ResponseEntity<String> login(String identity, String password);
 
-    @RequestMapping(value = "/auth/refresh", method = RequestMethod.POST)
-    String refresh(@RequestParam(value = "old-token")String oldToken);
+    @PostMapping("/auth/refresh")
+    ResponseEntity<String> refresh(@RequestParam(value = "old-token")String oldToken);
 
-    @RequestMapping(value = "/auth/public-key", method = RequestMethod.GET)
-    String getPubKey();
+    @GetMapping("/auth/public-key")
+    ResponseEntity<String> getPubKey();
 }

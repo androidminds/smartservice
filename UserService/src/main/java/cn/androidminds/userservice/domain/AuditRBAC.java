@@ -19,8 +19,7 @@ import java.time.Instant;
 @Audited
 @EntityListeners(AuditingEntityListener.class)
 @Data
-public abstract class AuditRBAC implements Serializable {
-
+public class AuditRBAC implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @CreatedBy

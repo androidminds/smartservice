@@ -10,8 +10,13 @@ eureka:
     serviceUrl:
       defaultZone: http://${eureka.host:localhost}:${eureka.port:8761}/eureka/
 
+
+ribbon.ReadTimeout: 50000
+ribbon.ConnectTimeout: 50000
+
 jwt:
-  password: adfe33ffllAD#32
+  password: adfkd#23
   token:
-    header: token
     expire: 1440
+
+
