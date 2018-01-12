@@ -28,6 +28,7 @@ ext {
 }
 
 dependencies {
+	compile('org.projectlombok:lombok:1.16.18')
 	compile('org.springframework.cloud:spring-cloud-starter-eureka')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }

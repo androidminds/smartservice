@@ -25,6 +25,8 @@ import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 
+import java.util.ArrayList;
+
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -49,7 +51,7 @@ public class userControllerTest {
 
     @Before
     public void setupMockMvc() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+        //mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
         login();
     }
 
@@ -94,32 +96,12 @@ public class userControllerTest {
             assert(result.getBody().getId() == i+2);
         }
     }
-    /*
-    void addUser(int count) throws Exception{
-        String url = "http://localhost:"+port+"/users";
 
-        for(int i = 0; i < count; i++) {
-            UserInfo userInfo = new UserInfo(0L, nameBase+i, password, nameBase+i+"@test.com", "136914326"+(100+i), UserState.ACTIVED);
-            ObjectMapper mapper = new ObjectMapper();
-
-            LinkedMultiValueMap<String,String> multiValueMap = new LinkedMultiValueMap<>();
-            multiValueMap.add("creator-token", rootToken);
-            multiValueMap.add("role", new Integer(Role.ADMIN).toString());
-
-            mockMvc.perform(post(url)
-                    .contentType(MediaType.APPLICATION_JSON_UTF8)
-                    .content(mapper.writeValueAsString(userInfo))
-                    .params(multiValueMap))
-                    //判断返回值
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.id", is(i+2)));
-        }
-    }*/
 
     @Test
     public void testAddUser() throws Exception
     {
-        addUser(1);
+        addUser(10);
     }
 
     @Test
@@ -127,17 +109,37 @@ public class userControllerTest {
         int count = 3;
         addUser(count);
 
+        String url = "http://localhost:"+port+"/users?start={start}&count={count}";
+
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.add("Authentication", rootToken);
+        HttpEntity<String> requestEntity = new HttpEntity<String>(null, requestHeaders);
+        ResponseEntity<UserInfo[]> response = template.exchange(url, HttpMethod.GET, requestEntity, UserInfo[].class, 1, count);
+
+        assert(response.getStatusCode() == HttpStatus.OK);
+        UserInfo[] userInfos = response.getBody();
+        assert(userInfos != null);
+        for(int i = 0; i < userInfos.length; i++) {
+            assert(userInfos[i].getId() == i+1);
+        }
+
+    }
+
+    @Test
+    public void testListUser1() throws Exception{
+        int count = 1;
+        addUser(count);
+
         String url = "http://localhost:"+port+"/users";
         LinkedMultiValueMap<String,String> multiValueMap = new LinkedMultiValueMap<>();
         multiValueMap.add("start", "1");
         multiValueMap.add("count", (new Integer(count)).toString());
+        multiValueMap.add("creator-token", rootToken);
 
         MvcResult result = mockMvc.perform(get(url)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .params(multiValueMap))
                 //判断返回值
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andReturn();
 
         ObjectMapper objectMapper=new ObjectMapper();

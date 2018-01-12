@@ -16,10 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Base64Utils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Base64;
@@ -113,19 +110,20 @@ public class UserController implements IUserService {
         }
     }
 
-    public ResponseEntity<ArrayList<UserInfo>> list(@RequestParam(value = "start",required = true)long start,
-                                                  @RequestParam(value = "count",required = true)int count,
-                                                  @RequestParam String token) {
+    public ResponseEntity<UserInfo[]> list(@RequestParam(value = "start")long start,
+                                           @RequestParam(value = "count")int count,
+                                           @RequestHeader(value = "Authentication")String token) {
         if(start <= 0 || count <= 0 || count > maxPageCount) {
             return ResponseEntity.badRequest().build();
         }
 
-        ArrayList<UserInfo> infoList = new ArrayList<>();
         Iterable<User> userList = userService.list(start, count);
+        UserInfo[] arrayInfo = new UserInfo[count];
+        int i = 0;
         for(User user : userList) {
-            infoList.add(user.getUserInfo());
+            arrayInfo[i++] = (user.getUserInfo());
         }
-        return ResponseEntity.ok(infoList);
+        return ResponseEntity.ok(arrayInfo);
     }
 
     public ResponseEntity<UserInfo> get(@PathVariable(value = "id",required = true)Long id,

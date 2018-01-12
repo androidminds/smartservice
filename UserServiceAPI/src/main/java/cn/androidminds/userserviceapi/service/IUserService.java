@@ -12,9 +12,9 @@ public interface IUserService {
     ResponseEntity<UserInfo> create(@RequestBody UserInfo userInfo);
 
     @GetMapping("/users")
-    ResponseEntity<ArrayList<UserInfo>> list(@RequestParam(value = "start")long start,
+    ResponseEntity<UserInfo[]> list(@RequestParam(value = "start")long start,
                                              @RequestParam(value = "count")int count,
-                                             @RequestParam(value = "creator-token")String creatorToken);
+                                             @RequestHeader(value = "Authentication")String token);
 
     @GetMapping("/users/{id}")
     ResponseEntity<UserInfo> get(@PathVariable(value = "id")Long id,
