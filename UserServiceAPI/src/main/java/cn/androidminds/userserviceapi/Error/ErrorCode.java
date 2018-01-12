@@ -1,8 +1,6 @@
 package cn.androidminds.userserviceapi.Error;
 
-import cn.androidminds.commonapi.rest.BaseErrorCode;
-
-public class ErrorCode extends BaseErrorCode {
+public class ErrorCode {
 
     public final static int ERR_PARAM_NAME_NULL = 100;
     public final static int ERR_PARAM_PASSWORD_NULL = 101;

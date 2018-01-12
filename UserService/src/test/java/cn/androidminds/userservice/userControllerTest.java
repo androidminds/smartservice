@@ -1,12 +1,10 @@
 package cn.androidminds.userservice;
 
-import cn.androidminds.commonapi.rest.RestResponse;
-import cn.androidminds.userserviceapi.Error.ErrorCode;
+import cn.androidminds.userservice.domain.Role;
 import cn.androidminds.userserviceapi.domain.UserInfo;
 import cn.androidminds.userserviceapi.domain.UserState;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.hamcrest.CoreMatchers;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,10 +50,10 @@ public class userControllerTest {
     @Before
     public void setupMockMvc() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+        login();
     }
 
-    @Test
-    public void testLogin(){
+    public void login(){
         String url = "http://localhost:9300/auth/login";
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>();
         map.add("identity", "root");
@@ -68,34 +66,60 @@ public class userControllerTest {
     void addUser(int count) throws Exception{
         String url = "http://localhost:"+port+"/users";
 
-        UserInfo userInfo1 = new UserInfo(0L, "root", "123456", null, null, UserState.ACTIVED);
-        ObjectMapper mapper1 = new ObjectMapper();
+        for(int i = 0; i < count; i++) {
+            HttpHeaders headers = new HttpHeaders();
+            MediaType type2 = MediaType.parseMediaType("application/json; charset=UTF-8");
+            headers.setContentType(type2);
+            headers.add("Accept", MediaType.APPLICATION_JSON.toString());
 
-        mockMvc.perform(post(url)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(mapper1.writeValueAsString(userInfo1)))
-                //判断返回值
-                .andExpect(status().isOk());
+            JSONObject jsonObj = new JSONObject();
+
+            try {
+                jsonObj.put("id", 0);
+                jsonObj.put("name", nameBase+i);
+                jsonObj.put("password", password);
+                jsonObj.put("email", nameBase+i+"@test.com");
+                jsonObj.put("phoneNumber", "136914326"+(100+i));
+                jsonObj.put("state", UserState.ACTIVED);
+                jsonObj.put("role", Role.NORMAL);
+                jsonObj.put("creatorToken", rootToken);
+            } catch (JSONException e) {
+                assert (false);
+                return;
+            }
+            HttpEntity<String> formEntity = new HttpEntity<String>(jsonObj.toString(), headers);
+
+            ResponseEntity<UserInfo> result = template.postForEntity(url, formEntity, UserInfo.class);
+            assert(result.getStatusCode() == HttpStatus.OK);
+            assert(result.getBody().getId() == i+2);
+        }
+    }
+    /*
+    void addUser(int count) throws Exception{
+        String url = "http://localhost:"+port+"/users";
 
         for(int i = 0; i < count; i++) {
             UserInfo userInfo = new UserInfo(0L, nameBase+i, password, nameBase+i+"@test.com", "136914326"+(100+i), UserState.ACTIVED);
             ObjectMapper mapper = new ObjectMapper();
 
+            LinkedMultiValueMap<String,String> multiValueMap = new LinkedMultiValueMap<>();
+            multiValueMap.add("creator-token", rootToken);
+            multiValueMap.add("role", new Integer(Role.ADMIN).toString());
+
             mockMvc.perform(post(url)
                     .contentType(MediaType.APPLICATION_JSON_UTF8)
-                    .content(mapper.writeValueAsString(userInfo)))
+                    .content(mapper.writeValueAsString(userInfo))
+                    .params(multiValueMap))
                     //判断返回值
                     .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                    .andExpect(jsonPath("$.statusCode", is(ErrorCode.OK)))
-                    .andExpect(jsonPath("$.data.id", is(i+1)));
+                    .andExpect(jsonPath("$.data.id", is(i+2)));
         }
-    }
+    }*/
 
     @Test
     public void testAddUser() throws Exception
     {
-        addUser(10);
+        addUser(1);
     }
 
     @Test
@@ -114,7 +138,6 @@ public class userControllerTest {
                 //判断返回值
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.statusCode", is(ErrorCode.OK)))
                 .andReturn();
 
         ObjectMapper objectMapper=new ObjectMapper();
@@ -170,7 +193,6 @@ public class userControllerTest {
                     //判断返回值
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                    .andExpect(jsonPath("$.statusCode", is(ErrorCode.OK)))
                     .andExpect(jsonPath("$.data.id", is(i+1)));
         }
     }
@@ -183,7 +205,7 @@ public class userControllerTest {
         String url = "http://localhost:"+port+"/users/{id}";
 
         for (int i = 0; i < count; i++) {
-            UserInfo userInfo = new UserInfo(0L, nameBase+i, "222222", nameBase+i+"@abc.com", "136914326"+(100+i), UserState.ACTIVED);
+            UserInfo userInfo = new UserInfo(0L, nameBase+i, "222222", nameBase+i+"@abc.com", "136914326"+(100+i), Role.NORMAL, UserState.ACTIVED, null);
             ObjectMapper mapper = new ObjectMapper();
 
             mockMvc.perform(put(url, i+1)
@@ -191,8 +213,7 @@ public class userControllerTest {
                     .content(mapper.writeValueAsString(userInfo)))
                     //判断返回值
                     .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                    .andExpect(jsonPath("$.statusCode", is(ErrorCode.OK)));
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
 
 
             mockMvc.perform(get(url, i+1)
@@ -200,7 +221,6 @@ public class userControllerTest {
                     //判断返回值
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                    .andExpect(jsonPath("$.statusCode", is(ErrorCode.OK)))
                     .andExpect(jsonPath("$.data.id", is(i+1)))
                     .andExpect(jsonPath("$.data.email", is(nameBase+i+"@abc.com")));
         }
@@ -217,15 +237,13 @@ public class userControllerTest {
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 //判断返回值
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.statusCode", is(ErrorCode.OK)));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
 
         mockMvc.perform(get(url, id)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 //判断返回值
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.statusCode", is(ErrorCode.FAIL)));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
     }
 
     @Test
@@ -245,8 +263,7 @@ public class userControllerTest {
                     .params(multiValueMap))
                     //判断返回值
                     .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                    .andExpect(jsonPath("$.statusCode", is(ErrorCode.OK)));
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
         }
 
         for (int i = 0; i < 1; i++) {
@@ -259,8 +276,7 @@ public class userControllerTest {
                     .params(multiValueMap))
                     //判断返回值
                     .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                    .andExpect(jsonPath("$.statusCode", is(ErrorCode.FAIL)));
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
         }
     }
 }

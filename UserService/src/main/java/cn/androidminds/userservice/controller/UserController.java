@@ -1,12 +1,10 @@
 package cn.androidminds.userservice.controller;
 
-import cn.androidminds.commonapi.rest.StatusResponse;
 import cn.androidminds.jwtserviceapi.domain.JwtInfo;
 import cn.androidminds.jwtserviceapi.util.JwtUtil;
 import cn.androidminds.userservice.domain.Authority;
 import cn.androidminds.userservice.domain.Role;
 import cn.androidminds.userservice.domain.User;
-import cn.androidminds.commonapi.rest.RestResponse;
 import cn.androidminds.userservice.feign.JwtServiceProxy;
 import cn.androidminds.userservice.service.UserService;
 import cn.androidminds.userserviceapi.Error.ErrorCode;
@@ -14,14 +12,17 @@ import cn.androidminds.userserviceapi.domain.UserInfo;
 import cn.androidminds.userserviceapi.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Optional;
 
 @RestController
@@ -34,8 +35,8 @@ public class UserController implements IUserService {
     @Autowired
     private JwtServiceProxy jwtServiceProxy;
 
-    @Value("${userservice.max-page-count}")
-    int maxPageCount = 50;
+    @Value("${userservice.max-page-count:100}")
+    int maxPageCount;
 
     byte[] jwtPublicKey;
 
@@ -43,126 +44,115 @@ public class UserController implements IUserService {
         if(jwtPublicKey == null){
             ResponseEntity<String> response = jwtServiceProxy.getPubKey();
             if(response != null && response.getBody() != null) {
-                jwtPublicKey = response.getBody().getBytes();
+                jwtPublicKey = Base64Utils.decodeFromString(response.getBody());
             }
         }
         return jwtPublicKey;
     }
 
-    public RestResponse<UserInfo> create(@RequestBody UserInfo userInfo,
-                                         @RequestParam int role,
-                                         @RequestParam String creator_token) {
+    public ResponseEntity<UserInfo> create(@RequestBody UserInfo userInfo) {
         int error;
-        RestResponse<UserInfo> result = new RestResponse<>();
 
         if(userInfo.getName() == null) {
-            return result.setStatusCode(ErrorCode.ERR_PARAM_NAME_NULL);
+            return ResponseEntity.status(ErrorCode.ERR_PARAM_NAME_NULL).build();
         }
 
-        if((error = Format.checkUserName(userInfo.getName())) != ErrorCode.OK)  {
-            return result.setStatusCode(error);
+        if((error = Format.checkUserName(userInfo.getName())) != 0)  {
+            return ResponseEntity.status(error).build();
         }
 
         if (userService.getUserByName(userInfo.getName()).isPresent()) {
-            return result.setStatusCode(ErrorCode.ERR_PARAM_NAME_EXISTED);
+            return ResponseEntity.status(ErrorCode.ERR_PARAM_NAME_EXISTED).build();
         }
 
         if(userInfo.getPassword() == null) {
-            return result.setStatusCode(ErrorCode.ERR_PARAM_PASSWORD_NULL);
+            return ResponseEntity.status(ErrorCode.ERR_PARAM_PASSWORD_NULL).build();
         }
 
-        if((error = Format.checkPassword(userInfo.getPassword())) != ErrorCode.OK)  {
-            return result.setStatusCode(error);
+        if((error = Format.checkPassword(userInfo.getPassword())) != 0)  {
+            return ResponseEntity.status(error).build();
         }
 
         if (userInfo.getEmail() != null) {
-            if((error = Format.checkEmail(userInfo.getEmail())) != ErrorCode.OK)  {
-                return result.setStatusCode(error);
+            if((error = Format.checkEmail(userInfo.getEmail())) != 0)  {
+                return ResponseEntity.status(error).build();
             }
             if(userService.getUserByEmail(userInfo.getEmail()).isPresent()) {
-                return result.setStatusCode(ErrorCode.ERR_PARAM_EMAIL_EXISTED);
+                return ResponseEntity.status(ErrorCode.ERR_PARAM_EMAIL_EXISTED).build();
             }
         }
 
         if (userInfo.getPhoneNumber() != null && userService.getUserByPhoneNumber(userInfo.getPhoneNumber()).isPresent()) {
-            if((error = Format.checkPhoneNumber(userInfo.getPhoneNumber())) != ErrorCode.OK)  {
-                return result.setStatusCode(error);
+            if((error = Format.checkPhoneNumber(userInfo.getPhoneNumber())) != 0)  {
+                return ResponseEntity.status(error).build();
             }
             if(userService.getUserByPhoneNumber(userInfo.getPhoneNumber()).isPresent()) {
-                return result.setStatusCode(ErrorCode.ERR_PARAM_PHONENUMBER_EXISTED);
+                return ResponseEntity.status(ErrorCode.ERR_PARAM_PHONENUMBER_EXISTED).build();
             }
         }
 
         try {
-            JwtInfo jwtInfo = JwtUtil.getJwtInfo(creator_token, getJWTPublicKey());
+            JwtInfo jwtInfo = JwtUtil.getJwtInfo(userInfo.getCreatorToken(), getJWTPublicKey());
             Optional<User> creator = userService.getUserByName(jwtInfo.getUserName());
-            if (!creator.isPresent()) return result.setStatusCode(ErrorCode.ERR_OPERATOR_NOT_ALLOWED);
+            if (!creator.isPresent()) return ResponseEntity.badRequest().build();
 
-            if(role == Role.ROOT
-                    || (role == Role.ADMIN && !creator.get().hasAuthority(Authority.OP_CREATE_ADMIN_USER))
-                    || (role == Role.NORMAL && !creator.get().hasAuthority(Authority.OP_CREATE_NORMAL_USER))) {
-                return result.setStatusCode(ErrorCode.ERR_OPERATOR_NOT_ALLOWED);
+            if(userInfo.getRole() == Role.ROOT
+                    || (userInfo.getRole() == Role.ADMIN && !creator.get().hasAuthority(Authority.OP_CREATE_ADMIN_USER))
+                    || (userInfo.getRole() == Role.NORMAL && !creator.get().hasAuthority(Authority.OP_CREATE_NORMAL_USER))) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            User user = userService.createUser(new User(userInfo, jwtInfo.getUserName()), role);
+            User user = userService.createUser(new User(userInfo, jwtInfo.getUserName()),userInfo.getRole());
 
             if(user.getId()> 0) {
-                return result.setStatusCode(ErrorCode.OK).setData(user.getUserInfo());
+                return ResponseEntity.ok(user.getUserInfo());
             } else {
-                return result.setStatusCode(ErrorCode.EXECUTE_ADD_USER_FAIL);
+                return ResponseEntity.status(ErrorCode.EXECUTE_ADD_USER_FAIL).build();
             }
         } catch (Exception e) {
-            return result.setStatusCode(ErrorCode.ERR_OPERATOR_NOT_ALLOWED);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    public RestResponse<ArrayList<UserInfo>> list(@RequestParam(value = "start",required = true)long start,
+    public ResponseEntity<ArrayList<UserInfo>> list(@RequestParam(value = "start",required = true)long start,
                                                   @RequestParam(value = "count",required = true)int count,
                                                   @RequestParam String token) {
-        RestResponse<ArrayList<UserInfo>> result = new RestResponse<>();
-        if(start <= 0 || count <= 0) {
-            return result.setStatusCode(ErrorCode.FAIL);
+        if(start <= 0 || count <= 0 || count > maxPageCount) {
+            return ResponseEntity.badRequest().build();
         }
-        if(count > maxPageCount) {
-            return result.setStatusCode(ErrorCode.PAGE_COUNT_EXCESS_LIMIT);
-        }
+
         ArrayList<UserInfo> infoList = new ArrayList<>();
         Iterable<User> userList = userService.list(start, count);
         for(User user : userList) {
             infoList.add(user.getUserInfo());
         }
-        return result.setStatusCode(ErrorCode.OK).setData(infoList);
+        return ResponseEntity.ok(infoList);
     }
 
-    public RestResponse<UserInfo> get(@PathVariable(value = "id",required = true)Long id,
+    public ResponseEntity<UserInfo> get(@PathVariable(value = "id",required = true)Long id,
                                       @RequestParam String token){
-        RestResponse<UserInfo> result = new RestResponse<>();
-
-        if(id <= 0) return result.setStatusCode(ErrorCode.ERR_PARAM_ID_NOT_EXISTED);
+         if(id <= 0) return ResponseEntity.status(ErrorCode.ERR_PARAM_ID_NOT_EXISTED).build();
 
         Optional<User> user =  userService.getUserById(id);
-        return user.map(u->{ return result.setStatusCode(ErrorCode.OK)
-                .setData(u.getUserInfo());})
-                .orElse(result.setStatusCode(ErrorCode.FAIL));
+        return user.map(u->{ return ResponseEntity.ok(u.getUserInfo());})
+                .orElse(ResponseEntity.badRequest().build());
     }
 
-    public StatusResponse modify(@RequestBody UserInfo userInfo,
-                                 @RequestParam String token) {
+    public ResponseEntity<Integer> modify(@RequestBody UserInfo userInfo) {
         int error;
-        StatusResponse result = new StatusResponse();
         boolean modifyPass = false;
 
         if(userInfo.getName() == null) {
-            return result.setStatusCode(ErrorCode.ERR_PARAM_NAME_NULL);
+            return ResponseEntity.status(ErrorCode.ERR_PARAM_NAME_NULL).build();
         }
 
         Optional<User> user = userService.getUserByName(userInfo.getName());
         if(!user.isPresent()) {
-            return result.setStatusCode(ErrorCode.ERR_PARAM_NAME_NOT_EXISTED);
+            return ResponseEntity.status(ErrorCode.ERR_PARAM_NAME_NOT_EXISTED).build();
         }
 
         if(userInfo.getPassword() != null) {
-            if((error = Format.checkPassword(userInfo.getPassword())) != ErrorCode.OK) {
-                return result.setStatusCode(error);
+            if((error = Format.checkPassword(userInfo.getPassword())) != 0) {
+                return ResponseEntity.status(error).build();
             } else {
                 user.get().setPassword(userInfo.getPassword());
                 modifyPass = true;
@@ -170,13 +160,13 @@ public class UserController implements IUserService {
         }
 
         if (userInfo.getEmail() != null && !userInfo.getEmail().equalsIgnoreCase(user.get().getEmail())) {
-            if((error = Format.checkEmail(userInfo.getEmail())) != ErrorCode.OK)  {
-                return result.setStatusCode(error);
+            if((error = Format.checkEmail(userInfo.getEmail())) != 0)  {
+                return ResponseEntity.status(error).build();
             }
 
             try {
                 if (userService.getUserByEmail(userInfo.getEmail()).isPresent()) {
-                    return result.setStatusCode(ErrorCode.ERR_PARAM_EMAIL_EXISTED);
+                    return ResponseEntity.status(ErrorCode.ERR_PARAM_EMAIL_EXISTED).build();
                 }
             } catch(Exception e) {
 
@@ -185,42 +175,40 @@ public class UserController implements IUserService {
         }
 
         if (userInfo.getPhoneNumber() != null && !userInfo.getPhoneNumber().equalsIgnoreCase(user.get().getPhoneNumber()) ) {
-            if((error = Format.checkPhoneNumber(userInfo.getPhoneNumber())) != ErrorCode.OK)  {
-                return result.setStatusCode(error);
+            if((error = Format.checkPhoneNumber(userInfo.getPhoneNumber())) != 0)  {
+                return ResponseEntity.status(error).build();
             }
             try {
                 if (userService.getUserByPhoneNumber(userInfo.getPhoneNumber()).isPresent()) {
-                    return result.setStatusCode(ErrorCode.ERR_PARAM_PHONENUMBER_EXISTED);
+                    return ResponseEntity.status(ErrorCode.ERR_PARAM_PHONENUMBER_EXISTED).build();
                 }
             }catch(Exception e) {
 
             }
             user.get().setPhoneNumber(userInfo.getPhoneNumber());
         }
-        return result.setStatusCode(userService.modify(user.get(), modifyPass)?ErrorCode.OK:ErrorCode.FAIL);
+        return userService.modify(user.get(), modifyPass)?ResponseEntity.ok(0):ResponseEntity.badRequest().build();
     }
 
-    public StatusResponse delete(@PathVariable(value = "id",required = true)Long id,
+    public boolean delete(@PathVariable(value = "id",required = true)Long id,
                                  @RequestParam String token) {
-        StatusResponse result = new StatusResponse();
-        if(id < 0) return result.setStatusCode(ErrorCode.ERR_PARAM_ID_NOT_EXISTED);
+        if(id < 0) return false;
         if(userService.getUserById(id) != null) {
             userService.delete(id);
-            return result.setStatusCode(ErrorCode.OK);
+            return true;
         } else {
-            return result.setStatusCode(ErrorCode.EXCCUTE_DELETE_FAIL);
+            return true;
         }
     }
 
-    public RestResponse<UserInfo> verify(@RequestParam(value = "identity",required = true)String identity,
+    public ResponseEntity<UserInfo> verify(@RequestParam(value = "identity",required = true)String identity,
                           @RequestParam(value = "password",required = true)String password)  {
-        RestResponse<UserInfo> result = new RestResponse<>();
         if(userService.verify(identity, password)) {
             Optional<User> user = userService.getUserByIdentity(identity);
             if(user.isPresent()) {
-                return result.setStatusCode(ErrorCode.OK).setData(user.get().getUserInfo());
+                return ResponseEntity.ok(user.get().getUserInfo());
             }
         }
-        return result.setStatusCode(ErrorCode.FAIL);
+        return ResponseEntity.badRequest().build();
     }
 }

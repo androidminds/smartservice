@@ -75,7 +75,7 @@ public class AuthFilter extends ZuulFilter {
     }
 
     private byte[] getJWTPublicKey() {
-        return jwtServiceProxy.getPubKey().getBytes();
+        return jwtServiceProxy.getPubKey().getBody().getBytes();
     }
 
 

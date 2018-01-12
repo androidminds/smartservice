@@ -1,17 +1,17 @@
 package cn.androidminds.jwtservice.service;
 
 
-import cn.androidminds.commonapi.rest.RestResponse;
 import cn.androidminds.jwtservice.feign.UserServiceProxy;
 import cn.androidminds.jwtservice.jwt.JwtTokenFactory;
 import cn.androidminds.jwtserviceapi.domain.JwtInfo;
 import cn.androidminds.jwtserviceapi.service.IJwtService;
 import cn.androidminds.jwtserviceapi.util.JwtUtil;
-import cn.androidminds.userserviceapi.Error.ErrorCode;
 import cn.androidminds.userserviceapi.domain.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,11 +26,11 @@ public class JwtService implements IJwtService {
     JwtTokenFactory tokenFactory;
 
     public ResponseEntity<String> login(String identity, String password) {
-        RestResponse<UserInfo> response = userServiceProxy.verify(identity, password);
-        if(response != null && response.getStatusCode() == ErrorCode.OK) {
-            if(response.getData() != null) {
+        ResponseEntity<UserInfo> response = userServiceProxy.verify(identity, password);
+        if(response != null && response.getStatusCode() == HttpStatus.OK) {
+            if(response.getBody() != null) {
                 try {
-                    return ResponseEntity.ok(tokenFactory.generateToken(response.getData()));
+                    return ResponseEntity.ok(tokenFactory.generateToken(response.getBody()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -48,10 +48,10 @@ public class JwtService implements IJwtService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return ResponseEntity.badRequest().body("");
+        return ResponseEntity.badRequest().build();
     }
 
     public ResponseEntity<String> getPubKey() {
-        return ResponseEntity.ok(tokenFactory.getPublicKey().toString());
+        return ResponseEntity.ok(Base64Utils.encodeToString(tokenFactory.getPublicKey()));
     }
 }

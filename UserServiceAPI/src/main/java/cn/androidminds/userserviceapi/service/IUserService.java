@@ -1,37 +1,33 @@
 package cn.androidminds.userserviceapi.service;
 
 
-import cn.androidminds.commonapi.rest.RestResponse;
-import cn.androidminds.commonapi.rest.StatusResponse;
 import cn.androidminds.userserviceapi.domain.UserInfo;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 
 public interface IUserService {
     @PostMapping("/users")
-    RestResponse<UserInfo> create(@RequestBody UserInfo userInfo,
-                                  @RequestParam(value = "role", required = true) int role,
-                                  @RequestParam(value = "creator_token", required = true) String creator_token);
+    ResponseEntity<UserInfo> create(@RequestBody UserInfo userInfo);
 
     @GetMapping("/users")
-    RestResponse<ArrayList<UserInfo>> list(@RequestParam(value = "start",required = true)long start,
-                                           @RequestParam(value = "count",required = true)int count,
-                                           @RequestParam(value = "creator_token", required = true) String creator_token);
+    ResponseEntity<ArrayList<UserInfo>> list(@RequestParam(value = "start")long start,
+                                             @RequestParam(value = "count")int count,
+                                             @RequestParam(value = "creator-token")String creatorToken);
 
     @GetMapping("/users/{id}")
-    RestResponse<UserInfo> get(@PathVariable(value = "id",required = true)Long id,
-                               @RequestParam(value = "creator_token", required = true) String creator_token);
+    ResponseEntity<UserInfo> get(@PathVariable(value = "id")Long id,
+                                 @RequestParam(value = "creator-token")String creatorToken);
 
     @PutMapping("/users/{id}")
-    StatusResponse modify(@RequestBody UserInfo userInfo,
-                          @RequestParam(value = "creator_token", required = true) String creator_token);
+    ResponseEntity<Integer> modify(@RequestBody UserInfo userInfo);
 
     @DeleteMapping("/users/{id}")
-    StatusResponse delete(@PathVariable(value = "id",required = true)Long id,
-                          @RequestParam(value = "creator_token", required = true) String creator_token);
+    boolean delete(@PathVariable(value = "id")Long id,
+                   @RequestParam(value = "creator-token")String creatorToken);
 
     @GetMapping("/verify")
-    RestResponse<UserInfo> verify(@RequestParam(value = "identity",required = true)String identity,
-                @RequestParam(value = "password",required = true) String password);
+    ResponseEntity<UserInfo> verify(@RequestParam(value = "identity")String identity,
+                                    @RequestParam(value = "password")String password);
 }

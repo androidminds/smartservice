@@ -77,9 +77,12 @@ public class JwtServiceTest {
     @Test
     public void testGetPubKey() throws Exception{
         String url = "http://localhost:"+port+"/auth/public-key";
-        mockMvc.perform(get(url)
+        MvcResult result = mockMvc.perform(get(url)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 //判断返回值
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andReturn();
+        String key = result.getResponse().getContentAsString();
+        assert(key.length() > 200);
     }
 }

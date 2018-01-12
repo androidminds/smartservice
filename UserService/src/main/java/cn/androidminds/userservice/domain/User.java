@@ -94,6 +94,6 @@ public class User /*extends AuditRBAC*/{
     }
 
     public UserInfo getUserInfo() {
-        return new UserInfo(id, null, name, email, phoneNumber, state);
+        return new UserInfo(id, name, null, email, phoneNumber, -1,state, null);
     }
 }
