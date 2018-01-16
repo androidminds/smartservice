@@ -1,5 +1,12 @@
 package cn.androidminds.jwtservice;
 
+import cn.androidminds.jwtserviceapi.domain.JwtInfo;
+import cn.androidminds.userserviceapi.domain.UserInfo;
+import cn.androidminds.userserviceapi.domain.UserState;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.ribbon.proxy.annotation.Http;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,16 +14,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -40,7 +49,7 @@ public class JwtServiceTest {
     int pt;
 
     String login(String name, String password) throws Exception{
-        String url = "http://localhost:"+port+"/auth/login";
+        String url = "http://localhost:"+port+"/login";
 
         LinkedMultiValueMap<String,String> multiValueMap = new LinkedMultiValueMap<>();
         multiValueMap.add("identity", "root");
@@ -61,22 +70,36 @@ public class JwtServiceTest {
 
     @Test
     public void testRefresh() throws Exception{
+        String url = "http://localhost:"+port+"/refresh";
+        JwtInfo jwtInfo = new JwtInfo("root");
+        ObjectMapper mapper = new ObjectMapper();
+
+        MvcResult result = mockMvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(mapper.writeValueAsString(jwtInfo)))
+                //判断返回值
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+/*
+    @Test
+    public void testRefresh() throws Exception {
         String token = login("root", "123456");
 
         String url = "http://localhost:"+port+"/auth/refresh";
-        LinkedMultiValueMap<String,String> multiValueMap = new LinkedMultiValueMap<>();
-        multiValueMap.add("old-token", token);
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.add("Authorization", token);
+        HttpEntity<String> requestEntity = new HttpEntity<String>(null, requestHeaders);
+        ResponseEntity<String> response = template.postForEntity(url, requestEntity, String.class );
+        assert(response.getStatusCode() == HttpStatus.OK);
 
-        mockMvc.perform(post(url)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .params(multiValueMap))
-                //判断返回值
-                .andExpect(status().isOk());
+        response = template.postForEntity(url, null, String.class);
+        assert(response.getStatusCode() == HttpStatus.UNAUTHORIZED);
     }
-
+*/
     @Test
     public void testGetPubKey() throws Exception{
-        String url = "http://localhost:"+port+"/auth/public-key";
+        String url = "http://localhost:"+port+"/public-key";
         MvcResult result = mockMvc.perform(get(url)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 //判断返回值

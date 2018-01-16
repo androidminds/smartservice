@@ -25,7 +25,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Iterable<User> list(long start, int count) {
+    public List<User> list(long start, int count) {
         ArrayList<Long> idList = new ArrayList<>();
         for(long i = start; i < start + count; i++) {
             idList.add(i);
@@ -61,8 +61,9 @@ public class UserService {
         return user.getId() > 0;
     }
 
-    public void delete(long id) {
+    public boolean delete(long id) {
         userRepository.delete(new Long(id));
+        return true;
     }
 
     public boolean verify(String identity, String password)  {

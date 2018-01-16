@@ -12,8 +12,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 
 @RestController
@@ -24,6 +28,7 @@ public class JwtService implements IJwtService {
 
     @Autowired
     JwtTokenFactory tokenFactory;
+
 
     public ResponseEntity<String> login(String identity, String password) {
         ResponseEntity<UserInfo> response = userServiceProxy.verify(identity, password);
@@ -39,16 +44,14 @@ public class JwtService implements IJwtService {
         return ResponseEntity.badRequest().body("");
     }
 
-    public ResponseEntity<String> refresh(@RequestParam(value = "old-token")String oldToken) {
+    @Override
+    public ResponseEntity<String> refresh(@RequestBody JwtInfo jwtInfo) {
         try {
-            JwtInfo jwtInfo = JwtUtil.getJwtInfo(oldToken, tokenFactory.getPublicKey());
-            if(jwtInfo.getUserName() != null) {
-                return ResponseEntity.ok(tokenFactory.generateToken(jwtInfo));
-            }
+            return ResponseEntity.ok(tokenFactory.generateToken(jwtInfo));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
     public ResponseEntity<String> getPubKey() {

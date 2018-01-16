@@ -16,5 +16,5 @@ public class UserInfo implements Serializable {
     String phoneNumber;
     int role;
     int state;
-    String creatorToken;
+    String operator;
 }

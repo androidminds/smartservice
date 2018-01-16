@@ -5,6 +5,7 @@ import cn.androidminds.userserviceapi.domain.UserInfo;
 import cn.androidminds.userserviceapi.domain.UserState;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.jayway.jsonpath.JsonPath;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,20 +52,9 @@ public class userControllerTest {
 
     @Before
     public void setupMockMvc() {
-        //mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
-        login();
+        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
     }
-
-    public void login(){
-        String url = "http://localhost:9300/auth/login";
-        MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>();
-        map.add("identity", "root");
-        map.add("password", "123456");
-        ResponseEntity<String> result = template.postForEntity(url, map, String.class);
-        assert(result.getStatusCode() == HttpStatus.OK);
-        rootToken = result.getBody().toString();
-    }
-
+/*
     void addUser(int count) throws Exception{
         String url = "http://localhost:"+port+"/users";
 
@@ -96,14 +86,52 @@ public class userControllerTest {
             assert(result.getBody().getId() == i+2);
         }
     }
+*/
 
+    void addUser(int count) throws Exception{
+        String url = "http://localhost:"+port+"/users";
+
+        for(int i = 0; i < count; i++) {
+            UserInfo userInfo = new UserInfo(0L, nameBase+i,
+                    password, nameBase+i+"@test.com",
+                    "136914326"+(100+i), Role.NORMAL,
+                    UserState.ACTIVED, "root");
+            ObjectMapper mapper = new ObjectMapper();
+
+            mockMvc.perform(post(url)
+                    .contentType(MediaType.APPLICATION_JSON_UTF8)
+                    .content(mapper.writeValueAsString(userInfo)))
+                    //判断返回值
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                    .andExpect(jsonPath("$.id", is(i+2)));
+        }
+    }
 
     @Test
     public void testAddUser() throws Exception
     {
-        addUser(10);
+        addUser(5);
     }
 
+    @Test
+    public void testAddUserTransaction() throws Exception{
+        String url = "http://localhost:"+port+"/users";
+
+        for(int i = 0; i < 50; i++) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+            ObjectMapper objectMapper= new ObjectMapper();
+            UserInfo userInfo = new UserInfo(0L, "tom",
+                    "123456", "tom@test.com",
+                    "13432346237", Role.NORMAL,
+                    UserState.ACTIVED, "root");
+            HttpEntity<String> formEntity = new HttpEntity<String>(objectMapper.writeValueAsString(userInfo), headers);
+            asyncTemplate.postForLocation(url, formEntity);
+        }
+        System.out.println("");
+    }
+/*
     @Test
     public void testListUser() throws Exception{
         int count = 3;
@@ -124,63 +152,36 @@ public class userControllerTest {
         }
 
     }
-
+*/
     @Test
-    public void testListUser1() throws Exception{
+    public void testListUser() throws Exception{
         int count = 1;
         addUser(count);
 
         String url = "http://localhost:"+port+"/users";
         LinkedMultiValueMap<String,String> multiValueMap = new LinkedMultiValueMap<>();
-        multiValueMap.add("start", "1");
-        multiValueMap.add("count", (new Integer(count)).toString());
-        multiValueMap.add("creator-token", rootToken);
+        multiValueMap.add("page", "0");
+        multiValueMap.add("page-count", "20");
 
         MvcResult result = mockMvc.perform(get(url)
                 .params(multiValueMap))
                 //判断返回值
-                .andExpect(status().isOk())
                 .andReturn();
 
-        ObjectMapper objectMapper=new ObjectMapper();
-        JSONObject jsonObj = new JSONObject(result.getResponse().getContentAsString());
-        JSONArray jsonArray = jsonObj.getJSONArray("data");
-        assert(jsonArray.length() == count);
-        for(int i = 0; i < count; i++) {
+        int status = result.getResponse().getStatus();
+        assert(status == HttpStatus.OK.value() || status == HttpStatus.NO_CONTENT.value());
+        if(status == HttpStatus.NO_CONTENT.value()) return;
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JSONArray jsonArray = new JSONArray(result.getResponse().getContentAsString());
+        assert(jsonArray.length() == count+1);
+        for(int i = 0; i < jsonArray.length(); i++) {
             JSONObject object = (JSONObject) jsonArray.get(i);
             UserInfo userInfo = objectMapper.readValue(object.toString(), UserInfo.class);
             assert(userInfo.getId() == i+1);
         }
     }
 
-    @Test
-    public void testAddUserTransaction(){
-        String url = "http://localhost:"+port+"/users";
-
-        for(int i = 0; i < 50; i++) {
-            HttpHeaders headers = new HttpHeaders();
-            MediaType type2 = MediaType.parseMediaType("application/json; charset=UTF-8");
-            headers.setContentType(type2);
-            headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-
-            JSONObject jsonObj = new JSONObject();
-
-            try {
-                jsonObj.put("id", 0);
-                jsonObj.put("name", "user");
-                jsonObj.put("password", "123456");
-                jsonObj.put("email", "user@test.com");
-                jsonObj.put("phoneNumber", "13691421387");
-            } catch (JSONException e) {
-                assert (false);
-                return;
-            }
-            HttpEntity<String> formEntity = new HttpEntity<String>(jsonObj.toString(), headers);
-
-            asyncTemplate.postForLocation(url, formEntity);
-        }
-        System.out.println("");
-    }
 
     @Test
     public void testGetInfo() throws Exception{
@@ -195,7 +196,7 @@ public class userControllerTest {
                     //判断返回值
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                    .andExpect(jsonPath("$.data.id", is(i+1)));
+                    .andExpect(jsonPath("$.id", is(i+1)));
         }
     }
 
@@ -207,10 +208,10 @@ public class userControllerTest {
         String url = "http://localhost:"+port+"/users/{id}";
 
         for (int i = 0; i < count; i++) {
-            UserInfo userInfo = new UserInfo(0L, nameBase+i, "222222", nameBase+i+"@abc.com", "136914326"+(100+i), Role.NORMAL, UserState.ACTIVED, null);
+            UserInfo userInfo = new UserInfo(0L, nameBase+i, "222222", nameBase+i+"@abc.com", "136914326"+(100+i), Role.NORMAL, UserState.ACTIVED, "root");
             ObjectMapper mapper = new ObjectMapper();
 
-            mockMvc.perform(put(url, i+1)
+            mockMvc.perform(put(url, i+2)
                     .contentType(MediaType.APPLICATION_JSON_UTF8)
                     .content(mapper.writeValueAsString(userInfo)))
                     //判断返回值
@@ -218,13 +219,13 @@ public class userControllerTest {
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
 
 
-            mockMvc.perform(get(url, i+1)
+            mockMvc.perform(get(url, i+2)
                     .contentType(MediaType.APPLICATION_JSON_UTF8))
                     //判断返回值
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                    .andExpect(jsonPath("$.data.id", is(i+1)))
-                    .andExpect(jsonPath("$.data.email", is(nameBase+i+"@abc.com")));
+                    .andExpect(jsonPath("$.id", is(i+2)))
+                    .andExpect(jsonPath("$.email", is(nameBase+i+"@abc.com")));
         }
     }
 
@@ -238,37 +239,34 @@ public class userControllerTest {
         mockMvc.perform(delete(url, id)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 //判断返回值
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+                .andExpect(status().isOk());
 
         mockMvc.perform(get(url, id)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 //判断返回值
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+                .andExpect(status().isBadRequest());
     }
 
     @Test
     public void testVerify() throws Exception{
-        //int count = 3;
-        //addUser(count);
+        int count = 3;
+        addUser(count);
 
         String url = "http://localhost:"+port+"/verify";
 
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < count; i++) {
             LinkedMultiValueMap<String,String> multiValueMap = new LinkedMultiValueMap<>();
-            multiValueMap.add("identity", "root");
-            multiValueMap.add("password", "123456"); //right password
+            multiValueMap.add("identity", nameBase+i);
+            multiValueMap.add("password", password); //right password
 
             mockMvc.perform(get(url)
                     .contentType(MediaType.APPLICATION_JSON_UTF8)
                     .params(multiValueMap))
                     //判断返回值
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+                    .andExpect(status().isOk());
         }
 
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < count; i++) {
             LinkedMultiValueMap<String,String> multiValueMap = new LinkedMultiValueMap<>();
             multiValueMap.add("identity", nameBase+i);
             multiValueMap.add("password", "12345"); //wrong password
@@ -277,8 +275,7 @@ public class userControllerTest {
                     .contentType(MediaType.APPLICATION_JSON_UTF8)
                     .params(multiValueMap))
                     //判断返回值
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+                    .andExpect(status().isBadRequest());
         }
     }
 }

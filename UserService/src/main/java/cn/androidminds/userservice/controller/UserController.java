@@ -1,7 +1,5 @@
 package cn.androidminds.userservice.controller;
 
-import cn.androidminds.jwtserviceapi.domain.JwtInfo;
-import cn.androidminds.jwtserviceapi.util.JwtUtil;
 import cn.androidminds.userservice.domain.Authority;
 import cn.androidminds.userservice.domain.Role;
 import cn.androidminds.userservice.domain.User;
@@ -16,10 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Base64Utils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -89,8 +89,7 @@ public class UserController implements IUserService {
         }
 
         try {
-            JwtInfo jwtInfo = JwtUtil.getJwtInfo(userInfo.getCreatorToken(), getJWTPublicKey());
-            Optional<User> creator = userService.getUserByName(jwtInfo.getUserName());
+            Optional<User> creator = userService.getUserByName(userInfo.getOperator());
             if (!creator.isPresent()) return ResponseEntity.badRequest().build();
 
             if(userInfo.getRole() == Role.ROOT
@@ -98,7 +97,7 @@ public class UserController implements IUserService {
                     || (userInfo.getRole() == Role.NORMAL && !creator.get().hasAuthority(Authority.OP_CREATE_NORMAL_USER))) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            User user = userService.createUser(new User(userInfo, jwtInfo.getUserName()),userInfo.getRole());
+            User user = userService.createUser(new User(userInfo),userInfo.getRole());
 
             if(user.getId()> 0) {
                 return ResponseEntity.ok(user.getUserInfo());
@@ -110,24 +109,25 @@ public class UserController implements IUserService {
         }
     }
 
-    public ResponseEntity<UserInfo[]> list(@RequestParam(value = "start")long start,
-                                           @RequestParam(value = "count")int count,
-                                           @RequestHeader(value = "Authentication")String token) {
-        if(start <= 0 || count <= 0 || count > maxPageCount) {
+    public ResponseEntity<UserInfo[]> list(@RequestParam(value = "page")long page,
+                                           @RequestParam(value = "page-count")int count) {
+        if(page < 0 || count <= 0 || count > maxPageCount) {
             return ResponseEntity.badRequest().build();
         }
 
-        Iterable<User> userList = userService.list(start, count);
-        UserInfo[] arrayInfo = new UserInfo[count];
-        int i = 0;
-        for(User user : userList) {
-            arrayInfo[i++] = (user.getUserInfo());
+        List<User> userList = userService.list(page*count, count);
+        if(userList.size() > 0) {
+            UserInfo[] arrayInfo = new UserInfo[userList.size()];
+            for (int i = 0; i < userList.size(); i++) {
+                arrayInfo[i] = userList.get(i).getUserInfo();
+            }
+            return ResponseEntity.ok(arrayInfo);
+        } else {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
-        return ResponseEntity.ok(arrayInfo);
     }
 
-    public ResponseEntity<UserInfo> get(@PathVariable(value = "id",required = true)Long id,
-                                      @RequestParam String token){
+    public ResponseEntity<UserInfo> get(@PathVariable(value = "id",required = true)Long id){
          if(id <= 0) return ResponseEntity.status(ErrorCode.ERR_PARAM_ID_NOT_EXISTED).build();
 
         Optional<User> user =  userService.getUserById(id);
@@ -188,14 +188,18 @@ public class UserController implements IUserService {
         return userService.modify(user.get(), modifyPass)?ResponseEntity.ok(0):ResponseEntity.badRequest().build();
     }
 
-    public boolean delete(@PathVariable(value = "id",required = true)Long id,
-                                 @RequestParam String token) {
-        if(id < 0) return false;
+    public ResponseEntity<String> delete(@PathVariable(value = "id",required = true)Long id) {
+
+        if(id <= 0) return ResponseEntity.badRequest().build();
+
         if(userService.getUserById(id) != null) {
-            userService.delete(id);
-            return true;
+            if(userService.delete(id)) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
         } else {
-            return true;
+            return ResponseEntity.badRequest().build();
         }
     }
 

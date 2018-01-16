@@ -1,16 +1,17 @@
 package cn.androidminds.jwtserviceapi.service;
 
+import cn.androidminds.jwtserviceapi.domain.JwtInfo;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 public interface IJwtService {
-    @PostMapping("/auth/login")
+    @PostMapping("/login")
     ResponseEntity<String> login(@RequestParam(value="identity") String identity,
                                  @RequestParam(value="password") String password);
 
-    @PostMapping("/auth/refresh")
-    ResponseEntity<String> refresh(@RequestParam(value = "old-token")String oldToken);
+    @PostMapping("/refresh")
+    ResponseEntity<String> refresh(@RequestBody JwtInfo jwtInfo);
 
-    @GetMapping("/auth/public-key")
+    @GetMapping("/public-key")
     ResponseEntity<String> getPubKey();
 }

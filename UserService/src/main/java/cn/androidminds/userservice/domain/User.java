@@ -83,7 +83,7 @@ public class User /*extends AuditRBAC*/{
         return false;
     }
 
-    public User(UserInfo userInfo, String creator) {
+    public User(UserInfo userInfo) {
         id = userInfo.getId();
         password = userInfo.getPassword();
         name = userInfo.getName();
