@@ -1,6 +1,10 @@
 server:
   port: 9310
 
+web:
+  server:
+     port: 8888
+
 eureka:
   client:
     serviceUrl:
