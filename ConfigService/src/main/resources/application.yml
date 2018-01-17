@@ -9,7 +9,7 @@ spring:
       server:
         git:
           uri: ${config.url:https://github.com/androidminds/SmartService/}
-          search-paths: ${config.search-paths:config}
+          search-paths: ${config.search-paths:Config/{application}}
 
 eureka:
   client:

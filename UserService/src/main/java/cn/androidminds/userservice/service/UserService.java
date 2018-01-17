@@ -4,11 +4,15 @@ import cn.androidminds.userservice.domain.User;
 import cn.androidminds.userservice.repository.UserRepository;
 import cn.androidminds.userserviceapi.service.IUserService;
 import cn.androidminds.userserviceapi.domain.UserInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +23,8 @@ public class UserService {
     @Autowired
     UserRepository userRepository;
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
+
+    private Logger logger = LoggerFactory.getLogger(UserService.class);
 
     public User createUser(User user, int role) {
         user.setPassword(encoder.encode(user.getPassword()));
@@ -58,11 +64,18 @@ public class UserService {
             user.setPassword(encoder.encode(user.getPassword()));
         }
         user = userRepository.saveAndFlush(user);
-        return user.getId() > 0;
+        return (user != null && user.getId() > 0);
     }
 
     public boolean delete(long id) {
-        userRepository.delete(new Long(id));
+        try {
+            userRepository.delete(new Long(id));
+        } catch(Exception e) {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw, true));
+            logger.error(sw.toString());
+            return false;
+        }
         return true;
     }
 

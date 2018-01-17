@@ -2,6 +2,7 @@ logging:
   level:
     com.androidminds.springstudy: DEBUG
     org.springframework.web: DEBUG
+  file:
 
 spring:
   application:

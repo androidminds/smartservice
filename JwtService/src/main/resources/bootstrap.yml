@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: JwtService
+  cloud:
+    config:
+      profile: dev
+      uri: http://localhost:9000/
+

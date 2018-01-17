@@ -18,6 +18,5 @@ public class GlobalDefaultExceptionHandler {
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw, true));
         logger.error(sw.toString());
-        logger.error("GlobalDefaultExceptionHandler.defaultErrorHandler()");
     }
 }
