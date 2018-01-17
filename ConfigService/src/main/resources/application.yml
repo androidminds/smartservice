@@ -8,8 +8,8 @@ spring:
     config:
       server:
         git:
-          uri: ${config.url:https://github.com/androidminds/SmartService/}
-          search-paths: ${config.search-paths:Config/{application}}
+          uri: ${config-git-uri:https://github.com/androidminds/SmartService/}
+          search-paths: ${config-git-search-paths:Config/*}
 
 eureka:
   client:

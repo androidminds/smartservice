@@ -3,7 +3,6 @@ package cn.androidminds.userservice.controller;
 import cn.androidminds.userservice.domain.Authority;
 import cn.androidminds.userservice.domain.Role;
 import cn.androidminds.userservice.domain.User;
-import cn.androidminds.userservice.feign.JwtServiceProxy;
 import cn.androidminds.userservice.service.UserService;
 import cn.androidminds.userserviceapi.Error.ErrorCode;
 import cn.androidminds.userserviceapi.domain.UserInfo;
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,23 +27,8 @@ public class UserController implements IUserService {
     @Autowired
     UserService userService;
 
-    @Autowired
-    private JwtServiceProxy jwtServiceProxy;
-
     @Value("${userservice.max-page-count:100}")
     int maxPageCount;
-
-    byte[] jwtPublicKey;
-
-    private byte[] getJWTPublicKey() {
-        if(jwtPublicKey == null){
-            ResponseEntity<String> response = jwtServiceProxy.getPubKey();
-            if(response != null && response.getBody() != null) {
-                jwtPublicKey = Base64Utils.decodeFromString(response.getBody());
-            }
-        }
-        return jwtPublicKey;
-    }
 
     public ResponseEntity<UserInfo> create(@RequestBody UserInfo userInfo) {
         int error;

@@ -1,6 +1,6 @@
 spring:
   application:
-    name: JwtService
+      name: ZuulService
   cloud:
     config:
       profile: native
