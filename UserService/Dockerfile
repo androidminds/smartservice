@@ -1,5 +1,4 @@
-# Name:     EurekaService
-# Time:     2017-12-18
+
 
 FROM java:8
 

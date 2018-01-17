@@ -51,7 +51,7 @@ dependencyManagement {
 	}
 }
 
-task buildDocker(type: Docker, dependsOn: build) {
+task buildDocker(type: Docker, dependsOn: assemble) {
 	push = false
 	tag = "user-server"
 	dockerfile = file('Dockerfile')

@@ -49,9 +49,9 @@ dependencyManagement {
 }
 
 
-task buildDocker(type: Docker, dependsOn: build) {
+task buildDocker(type: Docker, dependsOn: assemble) {
 	push = false
-	tag = "jwt-token-server"
+	tag = "jwt-server"
 	dockerfile = file('Dockerfile')
 	doFirst {
 		copy {
