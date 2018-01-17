@@ -21,7 +21,7 @@ services:
     depends_on:
       - eurekaserver1
     ports:
-      - "8081:8080"
+      - "8080:8080"
 
   zuulserver2:
     image: zuul-server:1.0.0
@@ -79,3 +79,21 @@ services:
       - eurekaserver1
     ports:
       - "9201:9200"
+
+  jwtserver1:
+    image: jwt-server:1.0.0
+    command: java -Djava.security.egd=file:/dev/./urandom -jar /app.jar --eureka.host=eurekaserver1 --eureka.port=8761
+    depends_on:
+      - eurekaserver1
+      - userserver1
+    ports:
+      - "9300:9300"
+
+  jwtserver2:
+    image: jwt-server:1.0.0
+    command: java -Djava.security.egd=file:/dev/./urandom -jar /app.jar --eureka.host=eurekaserver1 --eureka.port=8761
+    depends_on:
+      - eurekaserver1
+      - userserver2
+    ports:
+      - "9301:9300"

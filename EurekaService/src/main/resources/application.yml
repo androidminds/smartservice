@@ -1,12 +1,22 @@
 server:
   port: 8761
 
+spring:
+  application:
+    name: EurekaService
+  profiles:
+    active: dev
+
 management:
   security:
     enabled: false
   health:
     rabbit:
       enabled: false
+
+---
+spring:
+  profiles: dev
 
 eureka:
   client:
@@ -17,3 +27,28 @@ eureka:
   instance:
     hostname: localhost
     prefer-ip-address: true
+
+---
+spring:
+  profiles: eureka_1
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eurekaserver2:${server.port}/eureka/
+  instance:
+    hostname: eurekaserver1
+#    prefer-ip-address: true  该配置为true表示注册到eureka上的是IP，如果这样的化，eureka服务器就不能通过服务器发现Replicas。
+#                             故如果想通过Docker实现eureka高可用，该配置最好使用默认值（false）
+#                             此处配置为true且实现高可用也不是没有办法，就是每个eureka服务需映射到Docker环境外，且知道ip。
+---
+spring:
+  profiles: eureka_2
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eurekaserver1:${server.port}/eureka/
+  instance:
+    hostname: eurekaserver2
+#    prefer-ip-address: true
