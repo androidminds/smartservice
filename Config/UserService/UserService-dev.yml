@@ -17,12 +17,11 @@ spring:
     schema:
     data: classpath:db/data.sql
 
-
-
 logging:
   level:
-    com.androidminds.springstudy: DEBUG
+    com.androidminds.smartservice: DEBUG
     org.springframework.web: DEBUG
+    org.hibernate: DEBUG
   file:
 
 server:

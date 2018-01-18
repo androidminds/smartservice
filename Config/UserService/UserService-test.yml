@@ -19,9 +19,10 @@ spring:
 
 logging:
   level:
-    com.androidminds.springstudy: DEBUG
+    com.androidminds.smartservice: DEBUG
     org.springframework.web: DEBUG
-  file:
+    org.hibernate: DEBUG
+  file: /var/smartservice/UserService.log
 
 server:
   port: 9200

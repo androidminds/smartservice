@@ -33,6 +33,8 @@ dependencies {
 	compile('org.springframework.cloud:spring-cloud-starter-feign')
 	compile("org.springframework.cloud:spring-cloud-starter-eureka")
 	compile("org.springframework.boot:spring-boot-starter-actuator")
+	compile("org.springframework.cloud:spring-cloud-starter-bus-amqp")
+	compile("org.springframework.cloud:spring-cloud-starter-config")
 	compile("io.zipkin.java:zipkin-server")
 	compile("io.zipkin.java:zipkin-autoconfigure-ui")
 	testCompile('org.springframework.boot:spring-boot-starter-test')

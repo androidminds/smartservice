@@ -3,10 +3,14 @@ logging:
     com.androidminds.smartservice: DEBUG
     org.springframework.web: DEBUG
     org.hibernate: DEBUG
-  file:
+  file: /var/smartservice/JwtService.log
 
 server:
-  port: 9300
+  port: 9310
+
+web:
+  server:
+     port: 8888
 
 eureka:
   client:

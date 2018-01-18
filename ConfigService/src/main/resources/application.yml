@@ -1,6 +1,3 @@
-server:
-  port: ${port:9000}
-
 spring:
   application:
       name: ConfigService
@@ -9,7 +6,17 @@ spring:
       server:
         git:
           uri: ${config-git-uri:https://github.com/androidminds/SmartService/}
-          search-paths: ${config-git-search-paths:Config/*}
+          search-paths: ${config.git.search-paths:Config/*}
+
+logging:
+  level:
+    com.androidminds.smartservice: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate: DEBUG
+  file:
+
+server:
+  port: ${port:9000}
 
 eureka:
   client:

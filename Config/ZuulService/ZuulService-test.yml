@@ -3,7 +3,7 @@ logging:
     com.androidminds.smartservice: DEBUG
     org.springframework.web: DEBUG
     org.hibernate: DEBUG
-  file:
+  file: /var/smartservice/ZuulService.log
 
 server:
   port: 8060

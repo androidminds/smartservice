@@ -1,12 +1,13 @@
 spring:
   application:
     name: EurekaService
+  profiles:
+    active: dev
   cloud:
     config:
-      profile: native
       uri: http://localhost:9000/
   rabbitmq:
     host: localhost
     port: 5672
   zipkin:
-    base-url: http://localhost:9700
+    base-url: http://localhost:9100
