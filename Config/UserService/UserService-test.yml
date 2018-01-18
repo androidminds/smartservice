@@ -4,12 +4,11 @@ spring:
     port: 5672
   zipkin:
     base-url: http://localhost:9700
-  spring:
-    jpa:
-      database: MYSQL
-      show-sql: true
-      hibernate:
-         ddl-auto: create
+  jpa:
+    database: MYSQL
+    show-sql: true
+    hibernate:
+      ddl-auto: create
   datasource:
     url: jdbc:mysql://127.0.0.1:3306/userdb?characterEncoding=utf8
     river-class-name: com.mysql.jdbc.Driver
