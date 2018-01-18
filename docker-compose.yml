@@ -71,6 +71,8 @@ services:
       - eurekaserver1
     ports:
       - "9200:9200"
+    environment:
+      - spring.cloud.config.profile=test
 
   userserver2:
     image: user-server:1.0.0
@@ -79,6 +81,8 @@ services:
       - eurekaserver1
     ports:
       - "9201:9200"
+    environment:
+      - spring.cloud.config.profile=test
 
   jwtserver1:
     image: jwt-server:1.0.0
