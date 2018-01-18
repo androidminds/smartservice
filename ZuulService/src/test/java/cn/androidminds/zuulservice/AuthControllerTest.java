@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class AuthControllerTest {
 
     private TestRestTemplate template = new TestRestTemplate();
-    private int port = 8080;
+    private int port = 8060;
 
     public String login(){
         String url = "http://localhost:"+port+"/auth/login";
