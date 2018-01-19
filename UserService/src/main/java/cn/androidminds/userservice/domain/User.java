@@ -2,17 +2,22 @@ package cn.androidminds.userservice.domain;
 
 
 import cn.androidminds.userserviceapi.domain.UserInfo;
-import cn.androidminds.userserviceapi.domain.UserState;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
+import org.joda.time.DateTime;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,7 +26,7 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
 @NoArgsConstructor
-public class User /*extends AuditRBAC*/{
+public class User extends AuditRBAC{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -87,7 +92,7 @@ public class User /*extends AuditRBAC*/{
         email = userInfo.getEmail();
         phoneNumber = userInfo.getPhoneNumber();
         state = userInfo.getState();
-        //setCreatedBy(creator);
+        setCreatedBy(userInfo.getOperator());
     }
 
     public UserInfo getUserInfo() {

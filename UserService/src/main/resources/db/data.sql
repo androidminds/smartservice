@@ -5,7 +5,7 @@ INSERT INTO role(name) VALUES ('root user');
 INSERT INTO role(name) VALUES ('admin user');
 INSERT INTO role(name) VALUES ('normal user');
 
-INSERT INTO user(name, password, state) VALUES ('root', '$2a$16$/04ho7yVxNMe52I2NvPM7OqTSXEH1z.MBQFFza60f69OfGl42OdV.', 2);
+INSERT INTO user(name, password, state, created_by,created_date) VALUES ('root', '$2a$16$/04ho7yVxNMe52I2NvPM7OqTSXEH1z.MBQFFza60f69OfGl42OdV.', 2, 'ROOT', NOW());
 
 INSERT INTO user_roles(user_id, roles_id) VALUES(1, 1);
 

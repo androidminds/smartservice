@@ -3,6 +3,7 @@ package cn.androidminds.userservice.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.hibernate.envers.Audited;
+import org.joda.time.DateTime;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -13,13 +14,15 @@ import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
 import java.io.Serializable;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.Instant;
 
 @MappedSuperclass
 @Audited
 @EntityListeners(AuditingEntityListener.class)
 @Data
-public class AuditRBAC implements Serializable {
+public abstract class AuditRBAC implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @CreatedBy
@@ -30,7 +33,7 @@ public class AuditRBAC implements Serializable {
     @CreatedDate
     @Column(name = "created_date", nullable = false)
     @JsonIgnore
-    private Instant createdDate = Instant.now();
+    private Timestamp createdDate = new Timestamp(System.currentTimeMillis());
 
     @LastModifiedBy
     @Column(name = "last_modified_by", length = 50)
@@ -40,5 +43,5 @@ public class AuditRBAC implements Serializable {
     @LastModifiedDate
     @Column(name = "last_modified_date")
     @JsonIgnore
-    private Instant lastModifiedDate = Instant.now();
+    private Timestamp lastModifiedDate = new Timestamp(System.currentTimeMillis());
 }

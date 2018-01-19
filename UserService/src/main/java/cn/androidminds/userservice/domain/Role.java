@@ -21,7 +21,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class Role /* extends AuditRBAC */ {
+public class Role  /*extends AuditRBAC */ {
     public final static int ROOT = 1;
     public final static int ADMIN = 2;
     public final static int NORMAL = 3;
