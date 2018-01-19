@@ -2,8 +2,13 @@ package cn.androidminds.zuulservice;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.embedded.LocalServerPort;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.*;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
@@ -14,10 +19,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@PropertySource(value ={"classpath:application.yml"})
 public class AuthControllerTest {
 
     private TestRestTemplate template = new TestRestTemplate();
-    private int port = 8060;
+
+    //@Value("${server.port}")
+    private int port = 9090;
+
 
     public String login(){
         String url = "http://localhost:"+port+"/auth/login";

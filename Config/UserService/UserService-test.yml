@@ -25,7 +25,7 @@ logging:
   file: /var/smartservice/UserService.log
 
 server:
-  port: 9200
+  port: 9030
 
 eureka:
   client:

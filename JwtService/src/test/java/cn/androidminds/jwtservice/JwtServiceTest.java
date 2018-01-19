@@ -42,14 +42,9 @@ public class JwtServiceTest {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
     }
 
-    private TestRestTemplate template = new TestRestTemplate();
-    private int port = 9300;
-
-    @Value("${server.port}")
-    int pt;
 
     String login(String name, String password) throws Exception{
-        String url = "http://localhost:"+port+"/login";
+        String url = "/login";
 
         LinkedMultiValueMap<String,String> multiValueMap = new LinkedMultiValueMap<>();
         multiValueMap.add("identity", "root");
@@ -70,7 +65,7 @@ public class JwtServiceTest {
 
     @Test
     public void testRefresh() throws Exception{
-        String url = "http://localhost:"+port+"/refresh";
+        String url = "/refresh";
         JwtInfo jwtInfo = new JwtInfo("root");
         ObjectMapper mapper = new ObjectMapper();
 
@@ -81,25 +76,10 @@ public class JwtServiceTest {
                 .andExpect(status().isOk())
                 .andReturn();
     }
-/*
-    @Test
-    public void testRefresh() throws Exception {
-        String token = login("root", "123456");
 
-        String url = "http://localhost:"+port+"/auth/refresh";
-        HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.add("Authorization", token);
-        HttpEntity<String> requestEntity = new HttpEntity<String>(null, requestHeaders);
-        ResponseEntity<String> response = template.postForEntity(url, requestEntity, String.class );
-        assert(response.getStatusCode() == HttpStatus.OK);
-
-        response = template.postForEntity(url, null, String.class);
-        assert(response.getStatusCode() == HttpStatus.UNAUTHORIZED);
-    }
-*/
     @Test
     public void testGetPubKey() throws Exception{
-        String url = "http://localhost:"+port+"/public-key";
+        String url = "/public-key";
         MvcResult result = mockMvc.perform(get(url)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 //判断返回值

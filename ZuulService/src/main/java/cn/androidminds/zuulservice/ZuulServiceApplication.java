@@ -19,6 +19,7 @@ import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 @SpringBootApplication
 @EnableHystrix
 public class ZuulServiceApplication {
+
 	public static void main(String[] args) {
 		SpringApplication.run(ZuulServiceApplication.class, args);
 	}

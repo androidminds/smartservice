@@ -6,7 +6,7 @@ logging:
   file: /var/smartservice/ZuulService.log
 
 server:
-  port: 8060
+  port: 9090
 
 eureka:
   client:

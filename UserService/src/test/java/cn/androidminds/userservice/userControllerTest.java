@@ -36,10 +36,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 public class userControllerTest {
 
-    private AsyncRestTemplate asyncTemplate = new AsyncRestTemplate();
-    private TestRestTemplate template = new TestRestTemplate();
-    private int port = 9200;
-
     private String nameBase = "user";
     private String password = "123456";
 
@@ -48,48 +44,13 @@ public class userControllerTest {
 
     MockMvc mockMvc;
 
-    String rootToken;
-
     @Before
     public void setupMockMvc() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
     }
-/*
-    void addUser(int count) throws Exception{
-        String url = "http://localhost:"+port+"/users";
-
-        for(int i = 0; i < count; i++) {
-            HttpHeaders headers = new HttpHeaders();
-            MediaType type2 = MediaType.parseMediaType("application/json; charset=UTF-8");
-            headers.setContentType(type2);
-            headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-
-            JSONObject jsonObj = new JSONObject();
-
-            try {
-                jsonObj.put("id", 0);
-                jsonObj.put("name", nameBase+i);
-                jsonObj.put("password", password);
-                jsonObj.put("email", nameBase+i+"@test.com");
-                jsonObj.put("phoneNumber", "136914326"+(100+i));
-                jsonObj.put("state", UserState.ACTIVED);
-                jsonObj.put("role", Role.NORMAL);
-                jsonObj.put("creatorToken", rootToken);
-            } catch (JSONException e) {
-                assert (false);
-                return;
-            }
-            HttpEntity<String> formEntity = new HttpEntity<String>(jsonObj.toString(), headers);
-
-            ResponseEntity<UserInfo> result = template.postForEntity(url, formEntity, UserInfo.class);
-            assert(result.getStatusCode() == HttpStatus.OK);
-            assert(result.getBody().getId() == i+2);
-        }
-    }
-*/
 
     void addUser(int count) throws Exception{
-        String url = "http://localhost:"+port+"/users";
+        String url = "/users";
 
         for(int i = 0; i < count; i++) {
             UserInfo userInfo = new UserInfo(0L, nameBase+i,
@@ -116,6 +77,9 @@ public class userControllerTest {
 
     @Test
     public void testAddUserTransaction() throws Exception{
+        AsyncRestTemplate asyncTemplate = new AsyncRestTemplate();
+
+        int port = 9030;
         String url = "http://localhost:"+port+"/users";
 
         for(int i = 0; i < 50; i++) {
@@ -158,7 +122,7 @@ public class userControllerTest {
         int count = 1;
         addUser(count);
 
-        String url = "http://localhost:"+port+"/users";
+        String url = "/users";
         LinkedMultiValueMap<String,String> multiValueMap = new LinkedMultiValueMap<>();
         multiValueMap.add("page", "0");
         multiValueMap.add("page-count", "20");
@@ -188,7 +152,7 @@ public class userControllerTest {
         int count = 3;
         addUser(count);
 
-        String url = "http://localhost:"+port+"/users/{id}";
+        String url = "/users/{id}";
 
         for (int i = 0; i < count; i++) {
             mockMvc.perform(get(url, i+1)
@@ -205,7 +169,7 @@ public class userControllerTest {
         int count = 3;
         addUser(count);
 
-        String url = "http://localhost:"+port+"/users/{id}";
+        String url = "/users/{id}";
 
         for (int i = 0; i < count; i++) {
             UserInfo userInfo = new UserInfo(0L, nameBase+i, "222222", nameBase+i+"@abc.com", "136914326"+(100+i), Role.NORMAL, UserState.ACTIVED, "root");
@@ -234,7 +198,7 @@ public class userControllerTest {
         int count = 3;
         addUser(count);
 
-        String url = "http://localhost:"+port+"/users/{id}";
+        String url = "/users/{id}";
         int id = 2;
         mockMvc.perform(delete(url, id)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -252,7 +216,7 @@ public class userControllerTest {
         int count = 3;
         addUser(count);
 
-        String url = "http://localhost:"+port+"/verify";
+        String url = "/verify";
 
         for (int i = 0; i < count; i++) {
             LinkedMultiValueMap<String,String> multiValueMap = new LinkedMultiValueMap<>();

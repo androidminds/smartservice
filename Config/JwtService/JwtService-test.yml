@@ -6,7 +6,7 @@ logging:
   file: /var/smartservice/JwtService.log
 
 server:
-  port: 9310
+  port: 9040
 
 web:
   server:

@@ -4,10 +4,10 @@ spring:
     name: UserService
   cloud:
     config:
-      uri: http://localhost:9000/
+      uri: http://localhost:9010/
   rabbitmq:
     host: localhost
     port: 5672
   zipkin:
-    base-url: http://localhost:9100
+    base-url: http://localhost:9020
 

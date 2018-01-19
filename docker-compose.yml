@@ -9,7 +9,6 @@ services:
 
   eurekaserver2:
     image: eureka-server:1.0.0
-    #hostname: eurekaserver2
     ports:
       - "8762:8761"
     environment:
@@ -21,7 +20,7 @@ services:
     depends_on:
       - eurekaserver1
     ports:
-      - "9000:9000"
+      - "9010:9010"
 
   configserver2:
     image: config-server:1.0.0
@@ -29,7 +28,7 @@ services:
     depends_on:
       - eurekaserver1
     ports:
-      - "9001:9000"
+      - "9011:9010"
 
   zuulserver1:
     image: zuul-server:1.0.0
@@ -37,7 +36,7 @@ services:
     depends_on:
       - eurekaserver1
     ports:
-      - "8060:8060"
+      - "9090:9090"
 
   zuulserver2:
     image: zuul-server:1.0.0
@@ -45,7 +44,7 @@ services:
     depends_on:
       - eurekaserver1
     ports:
-      - "8061:8060"
+      - "9091:9090"
 
   zipkinserver1:
     image: zipkin-server:1.0.0
@@ -53,7 +52,7 @@ services:
     depends_on:
       - eurekaserver1
     ports:
-      - "9100:9100"
+      - "9020:9020"
 
   zipkinserver2:
     image: zipkin-server:1.0.0
@@ -61,7 +60,7 @@ services:
     depends_on:
       - eurekaserver1
     ports:
-      - "9101:9100"
+      - "9021:9020"
 
 
   userserver1:
@@ -71,7 +70,7 @@ services:
       - eurekaserver1
       - configserver1
     ports:
-      - "9200:9200"
+      - "9030:9030"
     environment:
       - spring.cloud.config.profile=test
 
@@ -82,7 +81,7 @@ services:
       - eurekaserver1
       - configserver1
     ports:
-      - "9201:9200"
+      - "9031:9030"
     environment:
       - spring.cloud.config.profile=test
 
@@ -93,7 +92,7 @@ services:
       - eurekaserver1
       - userserver1
     ports:
-      - "9300:9300"
+      - "9040:9040"
 
   jwtserver2:
     image: jwt-server:1.0.0
@@ -102,4 +101,4 @@ services:
       - eurekaserver1
       - userserver2
     ports:
-      - "9301:9300"
+      - "9041:9040"

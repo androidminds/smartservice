@@ -20,7 +20,7 @@ logging:
   file:
 
 server:
-  port: 9200
+  port: 9030
 
 eureka:
   client:

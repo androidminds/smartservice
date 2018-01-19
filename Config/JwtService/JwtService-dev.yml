@@ -6,7 +6,7 @@ logging:
   file:
 
 server:
-  port: 9310
+  port: 9040
 
 web:
   server:

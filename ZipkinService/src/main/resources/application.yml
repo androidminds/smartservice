@@ -6,7 +6,7 @@ spring:
     port: 5672
 
 server:
-  port: 9100
+  port: 9020
 
 eureka:
   client:
