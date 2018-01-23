@@ -1,43 +1,27 @@
 package cn.androidminds.zuulservice.filter;
 
-import cn.androidminds.jwtserviceapi.domain.JwtInfo;
-import cn.androidminds.jwtserviceapi.util.JwtUtil;
+import cn.androidminds.commonapi.jwt.JwtInfo;
+import cn.androidminds.commonapi.jwt.JwtUtil;
 import cn.androidminds.zuulservice.feign.JwtServiceProxy;
-import cn.androidminds.zuulservice.feign.UserServiceProxy;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.http.ServletInputStreamWrapper;
-import io.jsonwebtoken.Jwt;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
-import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
-import org.springframework.util.StreamUtils;
+import org.springframework.util.StringUtils;
 
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
 
 
 @Component
 public class AuthPreFilter extends ZuulFilter {
+    byte[] jwtPublicKey;
 
     @Autowired
-    private UserServiceProxy userServiceProxy;
-
-    @Qualifier("JwtServiceFeignClient")
-    @Autowired
-    private JwtServiceProxy jwtServiceProxy;
+    JwtServiceProxy jwtServiceProxy;
 
     @Override
     public String filterType() {
@@ -60,49 +44,60 @@ public class AuthPreFilter extends ZuulFilter {
         HttpServletRequest request = context.getRequest();
         final String requestUri = request.getRequestURI();
 
-        if(requestUri.equalsIgnoreCase("/auth/refresh")) {
-            String token = request.getHeader(HttpHeaders.AUTHORIZATION);
-            try {
-                JwtInfo jwtInfo = JwtUtil.getJwtInfo(token, getJWTPublicKey());
-                ObjectMapper mapper = new ObjectMapper();
-                final byte[] reqBodyBytes = mapper.writeValueAsBytes(jwtInfo);
+        if(isNonAuthUri(requestUri))
+            return null;
 
-                context.setRequest(new HttpServletRequestWrapper(request) {
-                    @Override
-                    public ServletInputStream getInputStream() throws IOException {
-                        return new ServletInputStreamWrapper(reqBodyBytes);
-                    }
-                    @Override
-                    public int getContentLength() {
-                        return reqBodyBytes.length;
-                    }
-                    @Override
-                    public long getContentLengthLong() {
-                        return reqBodyBytes.length;
-                    }
-                });
-                context.addZuulRequestHeader(HttpHeaders.CONTENT_TYPE,MediaType.APPLICATION_JSON_UTF8.toString());
-            } catch (Exception e) {
-                e.printStackTrace();
-                setFailedRequest("UNAUTHORIZED", HttpStatus.UNAUTHORIZED.value());
-            }
+        // check token
+        String token = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+        JwtInfo jwtInfo = null ;
+
+        try {
+            jwtInfo = JwtUtil.getJwtInfo(token, getJwtPublicKey());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
+        if(jwtInfo == null ||
+                StringUtils.isEmpty(jwtInfo.getUserName()) ||
+                StringUtils.isEmpty(jwtInfo.getUserId()) ||
+                jwtInfo.getExpireDate() == null) {
+            context.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
+            context.setSendZuulResponse(false);
+            return null;
+        }/*
+        if(jwtInfo.getExpireDate().toInstant().isAfter(Instant.now())) {
+            context.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
+            context.setSendZuulResponse(false);
+            return null;
+        }*/
+
+        // attach new param
+        context.addZuulRequestHeader("userName", jwtInfo.getUserName());
+        context.addZuulRequestHeader("userId", jwtInfo.getUserId());
         return null;
     }
 
+    boolean isNonAuthUri(String uri) {
+        String[] nonAuthUriArray = {
+                "/auth/login",
+        };
 
-    private byte[] getJWTPublicKey() {
-        return Base64Utils.decodeFromString(jwtServiceProxy.getPubKey().getBody());
-    }
-
-
-    private void setFailedRequest(String body, int code) {
-        RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.setResponseStatusCode(code);
-        if (ctx.getResponseBody() == null) {
-            ctx.setResponseBody(body);
-            ctx.setSendZuulResponse(false);
+        for(String item : nonAuthUriArray) {
+            if(item.equalsIgnoreCase(uri)) {
+                return true;
+            }
         }
+        return false;
     }
 
+    private byte[] getJwtPublicKey() {
+        if(jwtPublicKey == null) {
+            ResponseEntity<String> response = jwtServiceProxy.getPublicKey();
+            if(response != null && response.getBody() != null) {
+                jwtPublicKey = Base64Utils.decodeFromString(response.getBody());
+            }
+        }
+        return jwtPublicKey;
+    }
 }

@@ -10,6 +10,14 @@ repositories {
 }
 
 dependencies {
+
+    compile('io.jsonwebtoken:jjwt:0.7.0')
     compile('org.projectlombok:lombok:1.16.18')
+    compile('joda-time:joda-time:2.9.9')
+    compile('javax.servlet:javax.servlet-api:3.1.0')
+    compile('org.slf4j:slf4j-api:1.7.25')
+    compile('org.slf4j:log4j-over-slf4j:1.7.25')
+    compile('org.springframework:spring-web:4.3.13.RELEASE')
+    compile('org.springframework.cloud:spring-cloud-netflix-core:1.4.0.RELEASE')
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }

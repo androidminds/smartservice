@@ -1,6 +1,7 @@
-package cn.androidminds.jwtserviceapi.util;
+package cn.androidminds.commonapi.jwt;
 
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
@@ -18,15 +19,14 @@ public class RsaKeyUtil {
         return list;
     }
 
-    public static PublicKey getPublicKey(byte[] publicKey) throws Exception {
+    public static PublicKey getPublicKey(byte[] publicKey) throws NoSuchAlgorithmException,InvalidKeySpecException {
         X509EncodedKeySpec spec = new X509EncodedKeySpec(publicKey);
         return KeyFactory.getInstance("RSA").generatePublic(spec);
     }
 
-    public static PrivateKey getPrivateKey(byte[] privateKey) throws Exception {
+    public static PrivateKey getPrivateKey(byte[] privateKey) throws NoSuchAlgorithmException,InvalidKeySpecException {
         PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(privateKey);
         return KeyFactory.getInstance("RSA").generatePrivate(spec);
     }
-
 }
 

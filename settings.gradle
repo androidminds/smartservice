@@ -6,7 +6,6 @@ include "ConfigService"
 include "UserService"
 include "UserServiceAPI"
 include "JwtService"
-include "JwtServiceAPI"
 include "ZipkinService"
 include "CommonAPI"
 

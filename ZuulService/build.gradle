@@ -29,12 +29,11 @@ ext {
 }
 
 dependencies {
-	compile project(':JwtServiceAPI')
-	compile project(':UserServiceAPI')
+	compile project(':JwtService')
+	compile project(':CommonAPI')
 	compile('org.springframework.cloud:spring-cloud-starter-feign')
 	compile('org.springframework.cloud:spring-cloud-starter-zuul')
 	compile("org.springframework.cloud:spring-cloud-starter-eureka")
-	compile("org.springframework.cloud:spring-cloud-starter-hystrix")
 	compile("org.springframework.cloud:spring-cloud-starter-bus-amqp")
 	compile("org.springframework.boot:spring-boot-starter-actuator")
 	compile('org.springframework.cloud:spring-cloud-starter-zipkin')

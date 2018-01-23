@@ -35,7 +35,7 @@ public class AuthControllerTest {
         map.add("password", "123456");
         ResponseEntity<String> response = template.postForEntity(url, map, String.class);
         assert(response.getStatusCode() == HttpStatus.OK);
-        return response.getBody().toString();
+        return response.getHeaders().getFirst("authorization");
     }
 
     @Test
@@ -48,7 +48,7 @@ public class AuthControllerTest {
         String token = login();
         Thread.sleep(1000); // sleep a while to let system can generate a different token.
 
-        String url = "http://localhost:"+port+"/auth/refresh";
+        String url = "http://localhost:"+port+"/auth/refresh-token";
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.add("Authorization", token);
         HttpEntity<String> requestEntity = new HttpEntity<String>(null, requestHeaders);
@@ -59,16 +59,5 @@ public class AuthControllerTest {
         assert(newToken != null);
         assert(!newToken.equals(token));
 
-        response = template.postForEntity(url, null, String.class);
-        assert(response.getStatusCode() == HttpStatus.UNAUTHORIZED);
-    }
-
-    @Test
-    public void test1() {
-        String url = "http://localhost:"+port+"/auth/test";
-
-        ResponseEntity<String> response = template.getForEntity(url, String.class);
-        assert(response.getStatusCode() == HttpStatus.OK);
-        assert(response.getBody().equalsIgnoreCase("hello"));
     }
 }

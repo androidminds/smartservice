@@ -1,9 +1,11 @@
 package cn.androidminds.jwtservice;
 
+import cn.androidminds.commonapi.Exception.GlobalDefaultExceptionHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
+import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -14,4 +16,8 @@ public class JwtServiceApplication {
 		SpringApplication.run(JwtServiceApplication.class, args);
 	}
 
+	@Bean
+	GlobalDefaultExceptionHandler getGlobalExceptionHandler() {
+		return new GlobalDefaultExceptionHandler();
+	}
 }

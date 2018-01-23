@@ -34,11 +34,12 @@ public class AuthPostFilter extends ZuulFilter {
         RequestContext context = RequestContext.getCurrentContext();
         final String requestUri = context.getRequest().getRequestURI();
 
-        if(requestUri.equalsIgnoreCase("/auth/refresh")) {
+        if(requestUri.equalsIgnoreCase("/auth/refresh-token") ||
+                requestUri.equalsIgnoreCase("/auth/login") ) {
             if(context.getResponseStatusCode() == HttpStatus.OK.value()) {
                 try {
                     InputStream in = context.getResponseDataStream();
-                    byte[] buffer = new byte[256];
+                    byte[] buffer = new byte[1024];
                     in.read(buffer);
                     context.setResponseBody(null);
                     context.addZuulResponseHeader(HttpHeaders.AUTHORIZATION, new String(buffer));

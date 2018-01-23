@@ -41,13 +41,10 @@ zuul:
   #ignoredPatterns: /**/public-key/**
   #prefix: /v1
   routes:
-      jwt:
+      auth:
         path: /auth/**
         serviceId: JwtService
         sensitiveHeaders: Authorization
-      logout:
-        path: /auth/logout
-        url: forward:/logout
   max:
    host:
       connections: 500
