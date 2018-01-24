@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
 
@@ -48,9 +47,6 @@ public class JwtService implements IJwtService {
             } catch (InvalidKeySpecException e) {
                 logger.error(ExceptionOutput.toString(e));
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            } catch (NoSuchAlgorithmException e) {
-                logger.error(ExceptionOutput.toString(e));
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
         }
         return ResponseEntity.badRequest().body("");

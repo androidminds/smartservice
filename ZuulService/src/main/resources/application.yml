@@ -50,3 +50,12 @@ zuul:
       connections: 500
       socket-timeout-millis: 60000
       connect-timeout-millis: 60000
+
+authority:
+  token:
+    uri: /auth/login,/auth/refresh-token
+    remain-minutes: 360
+  anonymous:
+    uri: /auth/login
+
+

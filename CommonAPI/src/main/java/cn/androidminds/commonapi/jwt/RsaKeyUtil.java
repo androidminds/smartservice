@@ -8,9 +8,14 @@ import java.util.ArrayList;
 
 
 public class RsaKeyUtil {
-    public static ArrayList<byte[]> generateKeyPair(String password) throws NoSuchAlgorithmException {
+    public static ArrayList<byte[]> generateKeyPair(String password) {
         SecureRandom secureRandom = new SecureRandom(password.getBytes());
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        KeyPairGenerator keyPairGenerator = null;
+        try {
+            keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
         keyPairGenerator.initialize(1024, secureRandom);
         KeyPair keyPair = keyPairGenerator.genKeyPair();
         ArrayList<byte[]> list = new ArrayList<>();
@@ -19,14 +24,24 @@ public class RsaKeyUtil {
         return list;
     }
 
-    public static PublicKey getPublicKey(byte[] publicKey) throws NoSuchAlgorithmException,InvalidKeySpecException {
+    public static PublicKey getPublicKey(byte[] publicKey) throws InvalidKeySpecException {
         X509EncodedKeySpec spec = new X509EncodedKeySpec(publicKey);
-        return KeyFactory.getInstance("RSA").generatePublic(spec);
+        try {
+            return KeyFactory.getInstance("RSA").generatePublic(spec);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    public static PrivateKey getPrivateKey(byte[] privateKey) throws NoSuchAlgorithmException,InvalidKeySpecException {
+    public static PrivateKey getPrivateKey(byte[] privateKey) throws InvalidKeySpecException {
         PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(privateKey);
-        return KeyFactory.getInstance("RSA").generatePrivate(spec);
+        try {
+            return KeyFactory.getInstance("RSA").generatePrivate(spec);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
 

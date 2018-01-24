@@ -7,6 +7,7 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,9 @@ import org.springframework.util.Base64Utils;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.Instant;
+
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 
 @Component
@@ -22,6 +26,12 @@ public class AuthPreFilter extends ZuulFilter {
 
     @Autowired
     JwtServiceProxy jwtServiceProxy;
+
+    @Autowired
+    AuthUriManager authUriManager;
+
+    @Value("${authority.token.remain-minutes}")
+    int remainMinutes;
 
     @Override
     public String filterType() {
@@ -44,7 +54,7 @@ public class AuthPreFilter extends ZuulFilter {
         HttpServletRequest request = context.getRequest();
         final String requestUri = request.getRequestURI();
 
-        if(isNonAuthUri(requestUri))
+        if(authUriManager.isAnonymousAccessUri(requestUri))
             return null;
 
         // check token
@@ -65,30 +75,28 @@ public class AuthPreFilter extends ZuulFilter {
             context.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
             context.setSendZuulResponse(false);
             return null;
-        }/*
-        if(jwtInfo.getExpireDate().toInstant().isAfter(Instant.now())) {
+        }
+
+        if(jwtInfo.getExpireDate().toInstant().isBefore(Instant.now())) {
             context.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
             context.setSendZuulResponse(false);
             return null;
-        }*/
+        }
+
+        // change the almost expired token
+        if(!authUriManager.isRequireTokenUri(requestUri)) {
+            if(jwtInfo.getExpireDate().toInstant().isBefore(Instant.now().plus(remainMinutes,MINUTES))) {
+                ResponseEntity<String> response = jwtServiceProxy.refreshToken(jwtInfo.getUserName(), jwtInfo.getUserId());
+                if(response != null && response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                    context.addZuulResponseHeader(HttpHeaders.AUTHORIZATION, response.getBody());
+                }
+            }
+        }
 
         // attach new param
         context.addZuulRequestHeader("userName", jwtInfo.getUserName());
         context.addZuulRequestHeader("userId", jwtInfo.getUserId());
         return null;
-    }
-
-    boolean isNonAuthUri(String uri) {
-        String[] nonAuthUriArray = {
-                "/auth/login",
-        };
-
-        for(String item : nonAuthUriArray) {
-            if(item.equalsIgnoreCase(uri)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private byte[] getJwtPublicKey() {

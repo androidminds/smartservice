@@ -6,7 +6,7 @@ import cn.androidminds.commonapi.jwt.RsaKeyUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.security.NoSuchAlgorithmException;
+import javax.annotation.PostConstruct;
 import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 
@@ -16,29 +16,24 @@ public class JwtTokenFactory {
     private byte[] privateKey;
     private byte[] publicKey;
 
-    @Value("${jwt.token.expire:1440}")
-    private int tokenExpire; //unit is minute
+    @Value("${jwt.token.expire-minutes:1440}")
+    private int tokenExpireMinutes;
 
     @Value("${jwt.password:$@23sdf}")
     private String password;
 
-    public String generateToken(JwtInfo jwtInfo) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        if(publicKey == null) {
-            generateKeyPair();
-        }
-        return JwtUtil.generateToken(jwtInfo, tokenExpire * 60, privateKey);
-    }
-
-    public byte[] getPublicKey() throws NoSuchAlgorithmException {
-        if(publicKey == null) {
-            generateKeyPair();
-        }
-        return publicKey;
-    }
-
-    private void generateKeyPair() throws NoSuchAlgorithmException {
+    @PostConstruct
+    public void init() {
         List<byte[]> list = RsaKeyUtil.generateKeyPair(password);
         privateKey = list.get(0);
         publicKey = list.get(1);
+    }
+
+    public String generateToken(JwtInfo jwtInfo) throws InvalidKeySpecException {
+        return JwtUtil.generateToken(jwtInfo, tokenExpireMinutes, privateKey);
+    }
+
+    public byte[] getPublicKey() {
+        return publicKey;
     }
 }

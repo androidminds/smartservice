@@ -8,17 +8,18 @@ import org.joda.time.DateTime;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.time.Instant;
 
 public class JwtUtil {
     private static final String JWT_KEY_USERNAME = "userName";
     private static final String JWT_KEY_USERID = "userId";
 
     public static String generateToken(JwtInfo jwtInfo, int expire, byte[]privateKey)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
+            throws InvalidKeySpecException {
         return Jwts.builder()
                 .claim(JWT_KEY_USERNAME, jwtInfo.getUserName())
                 .claim(JWT_KEY_USERID, jwtInfo.getUserId())
-                .setExpiration(DateTime.now().plusSeconds(expire).toDate())
+                .setExpiration(DateTime.now().plusMinutes(expire).toDate())
                 .signWith(SignatureAlgorithm.RS256, RsaKeyUtil.getPrivateKey(privateKey))
                 .compact();
     }

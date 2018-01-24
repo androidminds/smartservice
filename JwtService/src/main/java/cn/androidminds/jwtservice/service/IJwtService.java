@@ -18,4 +18,5 @@ public interface IJwtService {
 
     @GetMapping("/public-key")
     ResponseEntity<String> getPublicKey();
+
 }

@@ -20,6 +20,6 @@ ribbon:
 jwt:
   password: adfkd#23
   token:
-    expire: 1440
+    expire-minutes: 1440
 
 
