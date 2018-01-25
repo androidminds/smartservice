@@ -2,14 +2,11 @@ package cn.androidminds.userservice.service;
 
 import cn.androidminds.userservice.domain.User;
 import cn.androidminds.userservice.repository.UserRepository;
-import cn.androidminds.userserviceapi.service.IUserService;
-import cn.androidminds.userserviceapi.domain.UserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

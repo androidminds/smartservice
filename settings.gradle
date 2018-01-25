@@ -5,8 +5,9 @@ include "ZuulService"
 include "ConfigService"
 include "UserService"
 include "UserServiceAPI"
-include "JwtService"
+include "JwtTokenService"
 include "ZipkinService"
 include "CommonAPI"
-
+include "PermissionAnnotation"
+include 'JwtTokenServiceAPI'
 

@@ -85,8 +85,8 @@ services:
     environment:
       - spring.cloud.config.profile=test
 
-  jwtserver1:
-    image: jwt-server:1.0.0
+  jwttokenserver1:
+    image: jwt-token-server:1.0.0
     command: java -Djava.security.egd=file:/dev/./urandom -jar /app.jar --eureka.host=eurekaserver1 --eureka.port=8761
     depends_on:
       - eurekaserver1
@@ -94,8 +94,8 @@ services:
     ports:
       - "9040:9040"
 
-  jwtserver2:
-    image: jwt-server:1.0.0
+  jwttokenserver2:
+    image: jwt-token-server:1.0.0
     command: java -Djava.security.egd=file:/dev/./urandom -jar /app.jar --eureka.host=eurekaserver1 --eureka.port=8761
     depends_on:
       - eurekaserver1

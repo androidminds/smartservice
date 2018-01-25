@@ -14,8 +14,8 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 
-group = 'com.example'
-version = '0.0.1-SNAPSHOT'
+group = 'cn.androidminds'
+version = '1.0.0'
 sourceCompatibility = 1.8
 
 repositories {
@@ -29,7 +29,7 @@ ext {
 
 dependencies {
 	compile('org.projectlombok:lombok:1.16.18')
-	compile('org.springframework.cloud:spring-cloud-starter-eureka')
+	compile("org.springframework.cloud:spring-cloud-starter-feign")
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 

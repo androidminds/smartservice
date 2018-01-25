@@ -24,21 +24,24 @@ repositories {
 	mavenCentral()
 }
 
+
 ext {
 	springCloudVersion = 'Edgware.RELEASE'
 }
 
 dependencies {
-	compile project(':JwtTokenServiceAPI')
 	compile project(':CommonAPI')
+	compile project(':UserServiceAPI')
+	compile project(':JwtTokenServiceAPI')
+	compile project(':PermissionAnnotation')
+	compile('org.springframework.cloud:spring-cloud-starter-eureka')
 	compile('org.springframework.cloud:spring-cloud-starter-feign')
-	compile('org.springframework.cloud:spring-cloud-starter-zuul')
-	compile("org.springframework.cloud:spring-cloud-starter-eureka")
-	compile("org.springframework.cloud:spring-cloud-starter-bus-amqp")
-	compile("org.springframework.boot:spring-boot-starter-actuator")
-	compile('org.springframework.cloud:spring-cloud-starter-zipkin')
+	compile('org.springframework.boot:spring-boot-starter-web')
 	compile("org.springframework.cloud:spring-cloud-starter-config")
+	compile("org.springframework.cloud:spring-cloud-starter-bus-amqp")
+	compile('org.springframework.cloud:spring-cloud-starter-zipkin')
 	compile('org.springframework.cloud:spring-cloud-starter-hystrix')
+	//compile('org.springframework.cloud:spring-cloud-starter-sleuth')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
@@ -48,9 +51,10 @@ dependencyManagement {
 	}
 }
 
+
 task buildDocker(type: Docker, dependsOn: assemble) {
 	push = false
-	tag = "zuul-server"
+	tag = "jwt-token-server"
 	dockerfile = file('Dockerfile')
 	doFirst {
 		copy {

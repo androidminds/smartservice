@@ -2,7 +2,7 @@ package cn.androidminds.zuulservice.filter;
 
 import cn.androidminds.commonapi.jwt.JwtInfo;
 import cn.androidminds.commonapi.jwt.JwtUtil;
-import cn.androidminds.zuulservice.feign.JwtServiceProxy;
+import cn.androidminds.jwttokenserviceapi.feign.JwtTokenServiceFeign;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.apache.http.HttpHeaders;
@@ -22,10 +22,11 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 
 @Component
 public class AuthPreFilter extends ZuulFilter {
-    byte[] jwtPublicKey;
+
+    private byte[] jwtPublicKey;
 
     @Autowired
-    JwtServiceProxy jwtServiceProxy;
+    JwtTokenServiceFeign jwtTokenServiceFeign;
 
     @Autowired
     AuthUriManager authUriManager;
@@ -57,7 +58,7 @@ public class AuthPreFilter extends ZuulFilter {
         if(authUriManager.isAnonymousAccessUri(requestUri))
             return null;
 
-        // check token
+        // check the token's validation
         String token = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         JwtInfo jwtInfo = null ;
@@ -83,17 +84,20 @@ public class AuthPreFilter extends ZuulFilter {
             return null;
         }
 
+        // check permission
+
+
         // change the almost expired token
         if(!authUriManager.isRequireTokenUri(requestUri)) {
             if(jwtInfo.getExpireDate().toInstant().isBefore(Instant.now().plus(remainMinutes,MINUTES))) {
-                ResponseEntity<String> response = jwtServiceProxy.refreshToken(jwtInfo.getUserName(), jwtInfo.getUserId());
+                ResponseEntity<String> response = jwtTokenServiceFeign.refreshToken(jwtInfo.getUserName(), jwtInfo.getUserId());
                 if(response != null && response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                     context.addZuulResponseHeader(HttpHeaders.AUTHORIZATION, response.getBody());
                 }
             }
         }
 
-        // attach new param
+        // attach new headers
         context.addZuulRequestHeader("userName", jwtInfo.getUserName());
         context.addZuulRequestHeader("userId", jwtInfo.getUserId());
         return null;
@@ -101,9 +105,11 @@ public class AuthPreFilter extends ZuulFilter {
 
     private byte[] getJwtPublicKey() {
         if(jwtPublicKey == null) {
-            ResponseEntity<String> response = jwtServiceProxy.getPublicKey();
-            if(response != null && response.getBody() != null) {
-                jwtPublicKey = Base64Utils.decodeFromString(response.getBody());
+            synchronized(this) {
+                ResponseEntity<String> response = jwtTokenServiceFeign.getPublicKey();
+                if (response != null && response.getBody() != null) {
+                    jwtPublicKey = Base64Utils.decodeFromString(response.getBody());
+                }
             }
         }
         return jwtPublicKey;

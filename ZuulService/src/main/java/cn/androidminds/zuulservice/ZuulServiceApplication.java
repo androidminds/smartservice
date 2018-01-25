@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Bean;
 @EnableZuulProxy
 @EnableDiscoveryClient
 @EnableFeignClients
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages="cn.androidminds")
 public class ZuulServiceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ZuulServiceApplication.class, args);
@@ -28,4 +28,5 @@ public class ZuulServiceApplication {
 	GlobalDefaultExceptionHandler getGlobalExceptionHandler() {
 		return new GlobalDefaultExceptionHandler();
 	}
+
 }

@@ -6,7 +6,7 @@ import cn.androidminds.userservice.domain.User;
 import cn.androidminds.userservice.service.UserService;
 import cn.androidminds.userserviceapi.Error.ErrorCode;
 import cn.androidminds.userserviceapi.domain.UserInfo;
-import cn.androidminds.userserviceapi.service.IUserService;
+import cn.androidminds.userserviceapi.feign.UserServiceFeign;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -22,7 +22,7 @@ import java.util.Optional;
 
 @RestController
 @Transactional
-public class UserController implements IUserService {
+public class UserController implements UserServiceFeign {
 
     @Autowired
     UserService userService;
