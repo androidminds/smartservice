@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class JwtServiceTest {
+public class JwtTokenServiceTest {
 
     @Autowired
     WebApplicationContext context;
